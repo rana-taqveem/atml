@@ -1,0 +1,28 @@
+{
+  "content_id": 243,
+  "style_id": 2773,
+  "content_label": 9,
+  "style_label": 7,
+  "alpha": 0.7,
+  "seed": 6304,
+  "accepted": true,
+  "rejection_reason": null,
+  "conflict_id": "c9_s7_0023_243_2773",
+  "pair": [
+    7,
+    9
+  ],
+  "pair_name": "monkey__truck",
+  "direction": "9->7",
+  "direction_name": "truck_content__monkey_style",
+  "candidate_order": 23,
+  "content_class_name": "truck",
+  "style_class_name": "monkey",
+  "content_image_path": "monkey__truck/content__truck_content__monkey_style__c9_s7_0023_243_2773.png",
+  "style_image_path": "monkey__truck/style__truck_content__monkey_style__c9_s7_0023_243_2773.png",
+  "image_path": "monkey__truck/conflict__truck_content__monkey_style__c9_s7_0023_243_2773.png",
+  "preview_path": "monkey__truck/preview__truck_content__monkey_style__c9_s7_0023_243_2773.png",
+  "review_protocol": "visual_review_v1",
+  "selected_for_evaluation": true,
+  "review_source": "user_retained_selection"
+}

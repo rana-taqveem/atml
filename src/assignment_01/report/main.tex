@@ -1,0 +1,53 @@
+% ATML Programming Assignment 1 -- report.
+%
+% Official NeurIPS 2026 style (neurips_2026.sty, from the 2026 formatting kit).
+% The preprint option shows the author block and drops the review line numbers
+% and the "Submitted to NeurIPS" notice. The style fixes the body at 10 pt, the
+% "Abstract" heading at 12 pt bold centred, and \footnotesize at no less than
+% 8 pt. Use \small (9 pt) for the reference list.
+
+\documentclass{article}
+
+\usepackage[preprint]{neurips_2026}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{placeins}
+\usepackage{microtype}
+\usepackage{url}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\graphicspath{{./}}
+
+% Captions at 9 pt (\small); figure and table text stays at or above 8 pt.
+\captionsetup{font=small,labelfont=bf,skip=4pt}
+
+\title{Learning Beyond the IID Closed-Set Setting}
+\author{Rana Taqveem ul Hassan}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+% Abstract to be written once all four tasks are complete.
+Draft compiled with all four tasks.
+\end{abstract}
+
+\input{sections/02_task1}
+
+\FloatBarrier
+\input{sections/03_task2}
+
+\FloatBarrier
+\input{sections/04_task3}
+
+\FloatBarrier
+\input{sections/05_task4}
+
+\input{sections/06_appendix}
+
+\end{document}

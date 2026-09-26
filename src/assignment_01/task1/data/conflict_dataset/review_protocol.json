@@ -1,0 +1,19 @@
+{
+  "version": "visual_review_v1",
+  "accept_only_if": [
+    "Source objects are interpretable and style texture is visible.",
+    "The output preserves recognizable content shape.",
+    "Transferred texture is visible on the content object, not merely a color change.",
+    "Severe artifacts or background-dominated transfer do not make the intended conflict ambiguous."
+  ],
+  "rejection_reasons": [
+    "source_ambiguous",
+    "shape_lost",
+    "weak_texture",
+    "background_dominates",
+    "severe_artifacts",
+    "ambiguous"
+  ],
+  "selection_rule": "After visual review, select the first target number of accepted candidates in candidate_order within each direction.",
+  "model_predictions_used_for_selection": false
+}

@@ -1,0 +1,222 @@
+{
+  "n_original_candidates": 250,
+  "n_selected_accepted": 200,
+  "n_removed_not_selected": 50,
+  "n_rejected_with_documented_reason": 0,
+  "selection_source": "User-retained local files; not a new assistant visual acceptance audit",
+  "counts_by_direction": {
+    "0->1": 20,
+    "1->0": 20,
+    "1->2": 20,
+    "1->3": 20,
+    "2->1": 20,
+    "2->4": 20,
+    "3->1": 20,
+    "4->2": 20,
+    "7->9": 20,
+    "9->7": 20
+  },
+  "removed_candidates": [
+    {
+      "conflict_id": "c0_s1_0006_7165_3588",
+      "metadata_path": "airplane__bird/metadata__airplane_content__bird_style__c0_s1_0006_7165_3588.json"
+    },
+    {
+      "conflict_id": "c0_s1_0007_5255_275",
+      "metadata_path": "airplane__bird/metadata__airplane_content__bird_style__c0_s1_0007_5255_275.json"
+    },
+    {
+      "conflict_id": "c0_s1_0008_5711_275",
+      "metadata_path": "airplane__bird/metadata__airplane_content__bird_style__c0_s1_0008_5711_275.json"
+    },
+    {
+      "conflict_id": "c0_s1_0019_480_6068",
+      "metadata_path": "airplane__bird/metadata__airplane_content__bird_style__c0_s1_0019_480_6068.json"
+    },
+    {
+      "conflict_id": "c0_s1_0021_1463_5394",
+      "metadata_path": "airplane__bird/metadata__airplane_content__bird_style__c0_s1_0021_1463_5394.json"
+    },
+    {
+      "conflict_id": "c1_s0_0004_4188_3759",
+      "metadata_path": "airplane__bird/metadata__bird_content__airplane_style__c1_s0_0004_4188_3759.json"
+    },
+    {
+      "conflict_id": "c1_s0_0006_7066_3759",
+      "metadata_path": "airplane__bird/metadata__bird_content__airplane_style__c1_s0_0006_7066_3759.json"
+    },
+    {
+      "conflict_id": "c1_s0_0007_3588_298",
+      "metadata_path": "airplane__bird/metadata__bird_content__airplane_style__c1_s0_0007_3588_298.json"
+    },
+    {
+      "conflict_id": "c1_s0_0009_6068_808",
+      "metadata_path": "airplane__bird/metadata__bird_content__airplane_style__c1_s0_0009_6068_808.json"
+    },
+    {
+      "conflict_id": "c1_s0_0019_564_5255",
+      "metadata_path": "airplane__bird/metadata__bird_content__airplane_style__c1_s0_0019_564_5255.json"
+    },
+    {
+      "conflict_id": "c1_s2_0005_1740_6738",
+      "metadata_path": "bird__car/metadata__bird_content__car_style__c1_s2_0005_1740_6738.json"
+    },
+    {
+      "conflict_id": "c1_s2_0008_1428_4316",
+      "metadata_path": "bird__car/metadata__bird_content__car_style__c1_s2_0008_1428_4316.json"
+    },
+    {
+      "conflict_id": "c1_s2_0013_4361_3641",
+      "metadata_path": "bird__car/metadata__bird_content__car_style__c1_s2_0013_4361_3641.json"
+    },
+    {
+      "conflict_id": "c1_s2_0020_275_3944",
+      "metadata_path": "bird__car/metadata__bird_content__car_style__c1_s2_0020_275_3944.json"
+    },
+    {
+      "conflict_id": "c1_s2_0023_225_6738",
+      "metadata_path": "bird__car/metadata__bird_content__car_style__c1_s2_0023_225_6738.json"
+    },
+    {
+      "conflict_id": "c2_s1_0003_6981_463",
+      "metadata_path": "bird__car/metadata__car_content__bird_style__c2_s1_0003_6981_463.json"
+    },
+    {
+      "conflict_id": "c2_s1_0011_7826_61",
+      "metadata_path": "bird__car/metadata__car_content__bird_style__c2_s1_0011_7826_61.json"
+    },
+    {
+      "conflict_id": "c2_s1_0017_2436_2673",
+      "metadata_path": "bird__car/metadata__car_content__bird_style__c2_s1_0017_2436_2673.json"
+    },
+    {
+      "conflict_id": "c2_s1_0020_6981_1218",
+      "metadata_path": "bird__car/metadata__car_content__bird_style__c2_s1_0020_6981_1218.json"
+    },
+    {
+      "conflict_id": "c2_s1_0021_4605_7217",
+      "metadata_path": "bird__car/metadata__car_content__bird_style__c2_s1_0021_4605_7217.json"
+    },
+    {
+      "conflict_id": "c7_s9_0003_230_2379",
+      "metadata_path": "monkey__truck/metadata__monkey_content__truck_style__c7_s9_0003_230_2379.json"
+    },
+    {
+      "conflict_id": "c7_s9_0010_7608_4956",
+      "metadata_path": "monkey__truck/metadata__monkey_content__truck_style__c7_s9_0010_7608_4956.json"
+    },
+    {
+      "conflict_id": "c7_s9_0013_6869_732",
+      "metadata_path": "monkey__truck/metadata__monkey_content__truck_style__c7_s9_0013_6869_732.json"
+    },
+    {
+      "conflict_id": "c7_s9_0023_1122_2682",
+      "metadata_path": "monkey__truck/metadata__monkey_content__truck_style__c7_s9_0023_1122_2682.json"
+    },
+    {
+      "conflict_id": "c7_s9_0024_1985_852",
+      "metadata_path": "monkey__truck/metadata__monkey_content__truck_style__c7_s9_0024_1985_852.json"
+    },
+    {
+      "conflict_id": "c9_s7_0000_352_6663",
+      "metadata_path": "monkey__truck/metadata__truck_content__monkey_style__c9_s7_0000_352_6663.json"
+    },
+    {
+      "conflict_id": "c9_s7_0016_5211_1985",
+      "metadata_path": "monkey__truck/metadata__truck_content__monkey_style__c9_s7_0016_5211_1985.json"
+    },
+    {
+      "conflict_id": "c9_s7_0018_6202_57",
+      "metadata_path": "monkey__truck/metadata__truck_content__monkey_style__c9_s7_0018_6202_57.json"
+    },
+    {
+      "conflict_id": "c9_s7_0022_2379_6869",
+      "metadata_path": "monkey__truck/metadata__truck_content__monkey_style__c9_s7_0022_2379_6869.json"
+    },
+    {
+      "conflict_id": "c9_s7_0024_352_3581",
+      "metadata_path": "monkey__truck/metadata__truck_content__monkey_style__c9_s7_0024_352_3581.json"
+    },
+    {
+      "conflict_id": "c2_s4_0000_7327_6587",
+      "metadata_path": "car__deer/metadata__car_content__deer_style__c2_s4_0000_7327_6587.json"
+    },
+    {
+      "conflict_id": "c2_s4_0007_7843_490",
+      "metadata_path": "car__deer/metadata__car_content__deer_style__c2_s4_0007_7843_490.json"
+    },
+    {
+      "conflict_id": "c2_s4_0014_88_2862",
+      "metadata_path": "car__deer/metadata__car_content__deer_style__c2_s4_0014_88_2862.json"
+    },
+    {
+      "conflict_id": "c2_s4_0015_1059_490",
+      "metadata_path": "car__deer/metadata__car_content__deer_style__c2_s4_0015_1059_490.json"
+    },
+    {
+      "conflict_id": "c2_s4_0023_7327_1223",
+      "metadata_path": "car__deer/metadata__car_content__deer_style__c2_s4_0023_7327_1223.json"
+    },
+    {
+      "conflict_id": "c4_s2_0000_4089_7392",
+      "metadata_path": "car__deer/metadata__deer_content__car_style__c4_s2_0000_4089_7392.json"
+    },
+    {
+      "conflict_id": "c4_s2_0001_7387_7711",
+      "metadata_path": "car__deer/metadata__deer_content__car_style__c4_s2_0001_7387_7711.json"
+    },
+    {
+      "conflict_id": "c4_s2_0012_51_6216",
+      "metadata_path": "car__deer/metadata__deer_content__car_style__c4_s2_0012_51_6216.json"
+    },
+    {
+      "conflict_id": "c4_s2_0022_7661_2909",
+      "metadata_path": "car__deer/metadata__deer_content__car_style__c4_s2_0022_7661_2909.json"
+    },
+    {
+      "conflict_id": "c4_s2_0024_5708_5663",
+      "metadata_path": "car__deer/metadata__deer_content__car_style__c4_s2_0024_5708_5663.json"
+    },
+    {
+      "conflict_id": "c1_s3_0000_4733_4720",
+      "metadata_path": "bird__cat/metadata__bird_content__cat_style__c1_s3_0000_4733_4720.json"
+    },
+    {
+      "conflict_id": "c1_s3_0012_6068_6094",
+      "metadata_path": "bird__cat/metadata__bird_content__cat_style__c1_s3_0012_6068_6094.json"
+    },
+    {
+      "conflict_id": "c1_s3_0017_3388_1968",
+      "metadata_path": "bird__cat/metadata__bird_content__cat_style__c1_s3_0017_3388_1968.json"
+    },
+    {
+      "conflict_id": "c1_s3_0018_4733_185",
+      "metadata_path": "bird__cat/metadata__bird_content__cat_style__c1_s3_0018_4733_185.json"
+    },
+    {
+      "conflict_id": "c1_s3_0023_2673_3375",
+      "metadata_path": "bird__cat/metadata__bird_content__cat_style__c1_s3_0023_2673_3375.json"
+    },
+    {
+      "conflict_id": "c3_s1_0003_1563_7066",
+      "metadata_path": "bird__cat/metadata__cat_content__bird_style__c3_s1_0003_1563_7066.json"
+    },
+    {
+      "conflict_id": "c3_s1_0005_5551_3537",
+      "metadata_path": "bird__cat/metadata__cat_content__bird_style__c3_s1_0005_5551_3537.json"
+    },
+    {
+      "conflict_id": "c3_s1_0015_4184_5093",
+      "metadata_path": "bird__cat/metadata__cat_content__bird_style__c3_s1_0015_4184_5093.json"
+    },
+    {
+      "conflict_id": "c3_s1_0016_3375_61",
+      "metadata_path": "bird__cat/metadata__cat_content__bird_style__c3_s1_0016_3375_61.json"
+    },
+    {
+      "conflict_id": "c3_s1_0021_5522_1353",
+      "metadata_path": "bird__cat/metadata__cat_content__bird_style__c3_s1_0021_5522_1353.json"
+    }
+  ],
+  "limitation": "Removed files lack review decisions/reasons. Exclusion alone is not recorded as visual rejection. User should supply rejection status/reasons for complete accepted/rejected reporting."
+}

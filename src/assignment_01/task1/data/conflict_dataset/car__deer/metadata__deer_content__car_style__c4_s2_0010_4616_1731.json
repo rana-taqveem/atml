@@ -1,0 +1,28 @@
+{
+  "content_id": 4616,
+  "style_id": 1731,
+  "content_label": 4,
+  "style_label": 2,
+  "alpha": 0.7,
+  "seed": 6304,
+  "accepted": true,
+  "rejection_reason": null,
+  "conflict_id": "c4_s2_0010_4616_1731",
+  "pair": [
+    2,
+    4
+  ],
+  "pair_name": "car__deer",
+  "direction": "4->2",
+  "direction_name": "deer_content__car_style",
+  "candidate_order": 10,
+  "content_class_name": "deer",
+  "style_class_name": "car",
+  "content_image_path": "car__deer/content__deer_content__car_style__c4_s2_0010_4616_1731.png",
+  "style_image_path": "car__deer/style__deer_content__car_style__c4_s2_0010_4616_1731.png",
+  "image_path": "car__deer/conflict__deer_content__car_style__c4_s2_0010_4616_1731.png",
+  "preview_path": "car__deer/preview__deer_content__car_style__c4_s2_0010_4616_1731.png",
+  "review_protocol": "visual_review_v1",
+  "selected_for_evaluation": true,
+  "review_source": "user_retained_selection"
+}

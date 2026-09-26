@@ -10,3 +10,7 @@ nbconvert[webpdf]
 torchvision
 scikit-image
 jupyterlab
+open_clip_torch
+scikit-learn
+tqdm
+Pillow

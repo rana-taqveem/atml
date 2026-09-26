@@ -1,0 +1,28 @@
+{
+  "content_id": 5068,
+  "style_id": 564,
+  "content_label": 0,
+  "style_label": 1,
+  "alpha": 0.7,
+  "seed": 6304,
+  "accepted": true,
+  "rejection_reason": null,
+  "conflict_id": "c0_s1_0014_5068_564",
+  "pair": [
+    0,
+    1
+  ],
+  "pair_name": "airplane__bird",
+  "direction": "0->1",
+  "direction_name": "airplane_content__bird_style",
+  "candidate_order": 14,
+  "content_class_name": "airplane",
+  "style_class_name": "bird",
+  "content_image_path": "airplane__bird/content__airplane_content__bird_style__c0_s1_0014_5068_564.png",
+  "style_image_path": "airplane__bird/style__airplane_content__bird_style__c0_s1_0014_5068_564.png",
+  "image_path": "airplane__bird/conflict__airplane_content__bird_style__c0_s1_0014_5068_564.png",
+  "preview_path": "airplane__bird/preview__airplane_content__bird_style__c0_s1_0014_5068_564.png",
+  "review_protocol": "visual_review_v1",
+  "selected_for_evaluation": true,
+  "review_source": "user_retained_selection"
+}
