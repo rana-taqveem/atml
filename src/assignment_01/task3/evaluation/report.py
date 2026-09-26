@@ -13,7 +13,12 @@ import numpy as np
 from assignment_01.figure_style import TEXT_WIDTH_IN, print_ready
 
 # Printed width (inches) of figures the report shows narrower than the text block.
-PRINT_WIDTH = {"task3_fig3_alignment_study": 4.4}
+PRINT_WIDTH = {
+    "task3_fig3_alignment_study": 4.4,
+    # Their legends overhang slightly; drawn narrower so the saved PDF fits 5.5 in.
+    "task3_fig1_training_curves": 5.3,
+    "task3_fig5_diagnostics": 5.2,
+}
 
 # Drawn at print size, so these are the printed point sizes.
 plt.rcParams.update({
@@ -123,9 +128,9 @@ def figure_training_curves(histories, out_dir):
     for axis in axes:
         tidy(axis)
     handles, labels = axes[0].get_legend_handles_labels()
-    figure.tight_layout(rect=(0, 0.14, 1, 1))
-    figure.legend(handles, labels, loc="lower center", ncol=5, frameon=False,
-                  handlelength=1.4, columnspacing=0.8, bbox_to_anchor=(0.5, -0.02))
+    figure.tight_layout(rect=(0, 0.2, 1, 1))
+    figure.legend(handles, labels, loc="lower center", ncol=3, frameon=False,
+                  handlelength=1.4, columnspacing=1.0, bbox_to_anchor=(0.5, -0.03))
     save(figure, out_dir, "task3_fig1_training_curves")
 
 
@@ -148,14 +153,14 @@ def figure_method_comparison(final, out_dir):
     axis.bar(positions + width, target, width, label="Sketch (target)", color="#DD8452")
 
     for position, value in zip(positions + width, target):
-        axis.text(position, value + 1.2, f"{value:.1f}", ha="center", fontsize=7.5)
+        axis.text(position, value + 1.2, f"{value:.1f}", ha="center")
 
     axis.set_xticks(positions)
-    axis.set_xticklabels([LABELS.get(m, m) for m in names], fontsize=8)
+    axis.set_xticklabels([LABELS.get(m, m).replace(" (", "\n(") for m in names])
     axis.set_ylabel("macro-F1 (%)")
-    axis.set_ylim(0, 105)
-    axis.set_title("Source validation performance does not predict Sketch")
-    axis.legend(fontsize=8)
+    axis.set_ylim(0, 128)
+    axis.set_yticks([0, 25, 50, 75, 100])
+    axis.legend(ncol=3, loc="upper center", frameon=False)
     tidy(axis)
     figure.tight_layout()
     save(figure, out_dir, "task3_fig2_method_comparison")
@@ -225,20 +230,19 @@ def figure_diagnostics(final, out_dir):
         # A legend rather than per-point labels: the two DAN-DG settings sit
         # almost on top of each other, so annotations collide.
         for name, x, y in zip(names, values, target):
-            axis.scatter(x, y, s=95, color=COLORS.get(name, "grey"), zorder=3,
+            axis.scatter(x, y, s=40, color=COLORS.get(name, "grey"), zorder=3,
                          label=LABELS.get(name, name))
         axis.set_xlabel(label)
-        axis.set_ylabel("Sketch macro-F1 (%)")
-        axis.set_title(title, fontsize=10.5)
+        axis.set_title(title)
         tidy(axis)
+    axes[0].set_ylabel("Sketch macro-F1 (%)")
 
     axes[0].axvline(chance, color="grey", linestyle=":", linewidth=1.0)
-    axes[0].text(chance + 1.0, max(target) - 2, f"chance ({chance:.1f}%)",
-                 fontsize=7.5, color="grey")
-    axes[0].legend(fontsize=8, loc="center left", bbox_to_anchor=(0.08, 0.45),
-                   framealpha=0.9)
-
-    figure.tight_layout()
+    axes[0].text(chance + 1.0, max(target) - 2, f"chance ({chance:.1f}%)", color="grey")
+    handles, labels = axes[0].get_legend_handles_labels()
+    figure.tight_layout(rect=(0, 0.26, 1, 1))
+    figure.legend(handles, labels, loc="lower center", ncol=3, frameon=False,
+                  bbox_to_anchor=(0.5, -0.04))
     save(figure, out_dir, "task3_fig5_diagnostics")
 
 
@@ -319,10 +323,10 @@ def figure_per_class(results_dir, out_dir, baseline="erm"):
 
     axis.axhline(0, color="black", linewidth=0.9)
     axis.set_xticks(positions)
-    axis.set_xticklabels(classes, fontsize=8.5)
-    axis.set_ylabel("Sketch accuracy change vs ERM (pp)")
-    axis.set_title("An aggregate gain can hide class-level negative transfer")
-    axis.legend(fontsize=8)
+    axis.set_xticklabels(classes)
+    axis.set_ylabel("Change vs ERM (pp)")
+    axis.legend(ncol=4, loc="upper center", bbox_to_anchor=(0.5, -0.14), frameon=False,
+                columnspacing=0.8, handlelength=1.2)
     tidy(axis)
     figure.tight_layout()
     save(figure, out_dir, "task3_fig4_per_class")
@@ -368,7 +372,7 @@ def figure_per_class_vs_task2(results_dir, task2_results_dir, out_dir):
     axis.set_xticks(positions)
     axis.set_xticklabels(classes, fontsize=8.5)
     axis.set_ylabel("Sketch accuracy change vs shared ERM (pp)")
-    axis.set_title("Same discrepancy measure, different information", fontsize=10.5)
+    axis.set_title("Same discrepancy measure, different information")
     axis.legend(fontsize=8)
     tidy(axis)
     figure.tight_layout()

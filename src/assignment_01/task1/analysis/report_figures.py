@@ -95,12 +95,12 @@ def figure_interventions(analysis_dir, out_dir):
     left.set_xticklabels(["Gray-\nscale", "Hue\n30°", "Patch\nshuffle"])
     left.set_xlim(-0.55, len(conditions) - 0.45)
     left.set_ylabel("Accuracy change vs clean (pp)")
-    left.set_title("(a) Colour and patch structure", loc="left")
+    left.set_title("(a) Colour, patch", loc="left")
     tidy(left)
 
     for axis, key, title, ylabel in (
-        (middle, "mean_accuracy_pct", "(b) Translation: accuracy", "Top-1 accuracy (%)"),
-        (right, "mean_consistency_pct", "(c) Translation: consistency", "Consistency (%)"),
+        (middle, "mean_accuracy_pct", "(b) Shift: accuracy", "Top-1 accuracy (%)"),
+        (right, "mean_consistency_pct", "(c) Shift: consistency", "Consistency (%)"),
     ):
         for method in METHODS:
             colour, marker = STYLE[method]
