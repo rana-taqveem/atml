@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+tests/tmp*/
+
+# Caches
+.cache/
+hf_cache/
+.huggingface/
+wandb/
+
+# Student outputs
+outputs/
+
+# Downloaded course assets
+cached/*
+!cached/README.md
+checkpoints/*
+!checkpoints/README.md
+manifests/*
+!manifests/README.md
+data/*
+!data/README.md
+!data/word_limit_prompts.jsonl
+
+# LaTeX build artifacts and local report backups
+report/*.aux
+report/*.log
+report/*.out
+report/main_v*.tex
+report/main_v*.pdf
+report/README.md
+
+# Model weights and large binaries, wherever they appear (course template + common formats)
+*.pt
+*.pth
+*.safetensors
+*.bin
+*.ckpt
+*.gguf
+*.onnx
+
+# Misc
+*.zip
+.DS_Store
+
+# Downloaded Kaggle result bundles (keep out of Git)
+task*_outputs/
+
+# Local-only folders outside the submission layout (kept on disk, not submitted)
+docs/
+manual/
+tests/
+scripts/
+task6_synthesis/
+cached/
+manifests/
+.pytest_cache/

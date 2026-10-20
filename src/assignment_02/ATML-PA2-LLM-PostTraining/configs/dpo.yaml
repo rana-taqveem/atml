@@ -1,0 +1,24 @@
+base_config: configs/base.yaml
+beta: 0.10
+betas: [0.03, 0.10, 0.30]
+learning_rate: 2.0e-5
+weight_decay: 0.0
+batch_size: 2
+grad_accum_steps: 8
+epochs: 1
+short_ablation_examples: 600
+max_sequence_length: 768
+max_generation_tokens: 256
+max_grad_norm: 1.0
+standard_output: outputs/task1_dpo/standard
+length_output: outputs/task1_dpo/length_balanced
+results_dir: results/task1_dpo
+beta_output_template: outputs/task1_dpo/beta_{beta}
+
+# Held-out evaluation protocol (identical for every Task 1 condition).
+eval:
+  pair_batch_size: 4          # preference pairs per forward pass (chosen+rejected -> 8 sequences)
+  generation_prompts: 128     # first N held-out prompts whose chat prompt fits max_prompt_tokens
+  max_prompt_tokens: 512
+  generation_batch_size: 8
+  word_limit_samples: 5       # sampled responses per word-limit prompt, in addition to one greedy response
