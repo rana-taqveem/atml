@@ -53,12 +53,13 @@ report/*.sty
 # Downloaded Kaggle result bundles (keep out of Git)
 task*_outputs/
 
-# Local-only folders outside the submission layout (kept on disk, not submitted)
-docs/
-manual/
-tests/
-scripts/
-task6_synthesis/
-cached/
-manifests/
+# Local-only folders outside the submission layout (kept on disk, not submitted).
+# Leading "/" anchors each rule to this project root, so e.g. results/task6_synthesis/ is NOT ignored.
+/docs/
+/manual/
+/tests/
+/scripts/
+/task6_synthesis/
+/cached/
+/manifests/
 .pytest_cache/

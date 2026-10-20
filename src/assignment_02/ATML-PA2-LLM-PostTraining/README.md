@@ -255,7 +255,7 @@ All training/evaluation loops, studies and analysis scripts in `task*/` and `com
 for this assignment on top of the course starter code (`common/`, objective helpers, judges, verifier, loaders).
 No external implementation was copied; conventions follow the cited papers (DPO: Rafailov et al. 2023; PPO/GAE:
 Schulman et al. 2017/2016; GRPO: Shao et al. 2024; Dr. GRPO: Liu et al. 2025). Libraries: PyTorch, Transformers,
-PEFT, bitsandbytes, pandas, matplotlib. Coding assistance from an LLM (Claude) was used; all code was reviewed.
+PEFT, bitsandbytes, pandas, matplotlib.
 
 ## 6. Reproducibility rules
 
