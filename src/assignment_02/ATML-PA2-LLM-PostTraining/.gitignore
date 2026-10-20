@@ -25,6 +25,7 @@ manifests/*
 data/*
 !data/README.md
 !data/word_limit_prompts.jsonl
+!data/math_transfer_eval.jsonl
 
 # LaTeX build artifacts and local report backups
 report/*.aux
@@ -33,6 +34,8 @@ report/*.out
 report/main_v*.tex
 report/main_v*.pdf
 report/README.md
+report/*.tex
+report/*.sty
 
 # Model weights and large binaries, wherever they appear (course template + common formats)
 *.pt

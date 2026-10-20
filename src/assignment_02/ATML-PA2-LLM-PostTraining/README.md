@@ -6,7 +6,7 @@
 
 Run `python -m common.audit_assignment` to check saved evidence, and
 `python -m common.preflight_task --task 3 --require-cuda` (or task 4/5) before GPU work.
-The report is in `report/` (`main.tex`, `main.pdf`, figures in `report/figures/`). Known
+The report is `report/report.pdf` (figures in `report/figures/`). Known
 limitations (DPO prompt truncation; unequal realized token totals in the PPO KL and GRPO
 normalization forks) are stated in the report. Evaluation-cache checks reject partial
 smoke results and generations from different policies/protocols.
@@ -21,12 +21,12 @@ task1_dpo/ ... task5_feedback/   task code and Kaggle runner notebooks
 data/             supplied subsets/IDs; downloaded data, data/cached/ and data/manifests/ are ignored by Git
 checkpoints/      supplied/downloaded weights; ignored by Git
 results/          small JSON/CSV logs, generated-response records, evidence tables and figures
-report/           main.tex, main.pdf, figures/
+report/           report.pdf, figures/
 ```
 
 ```bash
 git clone https://github.com/rana-taqveem/atml.git
-cd atml
+cd atml/src/assignment_02/ATML-PA2-LLM-PostTraining
 python -m pip install -r requirements.txt
 python -m common.download_assets
 python -m common.validate_assets
@@ -52,7 +52,7 @@ Task 4 supplies the fixed AI safety judge and response-generation utilities, but
 
 ```bash
 git clone https://github.com/rana-taqveem/atml.git
-cd atml
+cd atml/src/assignment_02/ATML-PA2-LLM-PostTraining
 python -m pip install -r requirements.txt
 ```
 
@@ -232,12 +232,7 @@ python -m common.build_evidence  # results/evidence/: EVIDENCE.md, INDEX.md (req
 
 ### Report
 
-```bash
-cd report
-pdflatex -interaction=nonstopmode -halt-on-error main.tex   # run twice; delete main.aux first if labels/citations change
-```
-
-Report figures in `report/figures/` are copies of these canonical outputs (regenerate the source, then copy):
+The report is `report/report.pdf`. Its figures in `report/figures/` are copies of these canonical outputs (regenerate the source, then copy):
 
 | Report figure | Source | Command |
 |---|---|---|
