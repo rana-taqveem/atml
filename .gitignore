@@ -1,3 +1,8 @@
+# Repository-wide rules only. Each assignment folder keeps its own .gitignore
+# (e.g. src/assignment_02/ATML-PA2-LLM-PostTraining/.gitignore) for project-specific paths.
+# Do not add folder-name rules such as tests/, scripts/ or docs/ here: they match at
+# every depth and would hide those folders in other assignments.
+
 # General Python files
 __pycache__/
 *.py[cod]
@@ -30,9 +35,15 @@ venv/
 Thumbs.db
 .vscode/
 
+# Caches
+.cache/
+.pytest_cache/
+
 # Logs and temporary files
 *.log
 *.tmp
+# PA2 run logs are small saved results that support the report
+!src/assignment_02/ATML-PA2-LLM-PostTraining/results/**/*.log
 
 # AI/ML specific
 # Datasets (if too large for Git - use DVC otherwise)
@@ -44,7 +55,9 @@ models/*.h5
 models/*.pkl
 models/*.onnx
 models/*.pt
-checkpoints/
+# Ignore checkpoint contents at any depth, but keep a README explaining how to obtain them
+**/checkpoints/*
+!**/checkpoints/README.md
 runs/
 logs/
 
