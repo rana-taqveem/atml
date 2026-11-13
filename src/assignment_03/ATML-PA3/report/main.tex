@@ -1,0 +1,644 @@
+% PA3 report skeleton. Structure, figure/table slots and data wiring only.
+% All prose (abstract, methods, analysis, captions) must be written by the author:
+% the PA3 policy forbids generative-AI-written report text. Fill every [AUTHOR] marker.
+\documentclass{article}
+\usepackage[preprint]{neurips_2026}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,graphicx,booktabs,caption,microtype,array}
+\usepackage[hidelinks]{hyperref}
+\setcitestyle{authoryear,square,comma}
+\graphicspath{{figures/}}
+% Float spacing tightened for the 8-page limit.
+\setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{8pt plus 2pt minus 2pt}
+\captionsetup{skip=4pt}
+\newcommand{\AUTHOR}[1]{\textcolor{red}{[AUTHOR: #1]}}
+\usepackage{xcolor}
+
+\title{\AUTHOR{title}}
+\author{\AUTHOR{name, roll number}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Model adaptation and additional computation can improve task performance, but these gains do not always establish the intended behavior. In this study, we examine mathematical fine-tuning, visual grounding, and test-time computation to understand how training restrictions, image information, and answer selection affect model outcomes. Mathematical fine-tuning improved GSM8K across all methods. However, retention varied across benchmarks, with L2-SP achieving nearly the same mathematical gain as Full FT while improving BoolQ. In the visual-language experiment, correct images improved answer scores, although counting remained weak and some annotation-derived labels were questionable. Test-time sampling increased the availability of correct answers faster than selected accuracy. Self-certainty weighting improved MATH selection without additional generation tokens, while adaptive stopping reduced token use with comparatively small accuracy changes. Together, these findings show why benchmark scores, diagnostic measurements, and response-level evidence need to be interpreted together when assessing model improvement. Code: \url{[LINK REQUIRED: public GitHub repository]}
+\end{abstract}
+
+\section{Introduction}
+The core objective is to study how changes in model parameters, input information, and inference computation affect model behavior. More specifically, when does improved task performance reflect useful adaptation, and when do the measurements leave important weaknesses unresolved? To examine this, mathematical fine-tuning was evaluated against retention and conversational behavior. A visual interface was then trained through a staged curriculum and tested under image substitutions. Finally, repeated generation, answer selection, and adaptive stopping were compared using fixed response pools and a smaller live experiment.
+
+Across these tasks, the analysis combines controlled comparisons, mathematical diagnostics, and aligned response examples. Training loss, attention, and agreement provide evidence about particular mechanisms. Their relationship with correctness and broader capabilities is evaluated separately.
+
+\section{Experimental protocol}
+% Author's protocol text, inserted verbatim (paragraph labels set as \paragraph).
+\paragraph{Model setup and implementation.} Tasks 1 and 2 used Qwen3-0.6B with thinking disabled. Task 1 compared Full FT, L2-SP, LoRA-4, LoRA-16, and OPLoRA-16 using 40,000 MetaMathQA examples over 1,250 scheduled updates. Evaluation included the unchanged baseline, final models, and Full FT midpoint.
+
+Task 2 connected frozen SigLIP~\citep{zhai2023siglip} features to the language model through a trainable connector. Caption alignment, visual instruction tuning, and natural VQA specialization used 2,250, 1,500, and 750 scheduled updates. Later stages added LoRA and replay.
+
+Task 3 used supplied response pools from Qwen2.5-3B-Instruct on MATH and Qwen2.5-VL-3B-Instruct on MathVista. Each dataset contained 1,000 questions with 32 responses per question, split into 200 development and 800 held-out questions. Methods shared candidate prefixes across ten reveal orders. Adaptive thresholds were selected on development data. A separate 50-question live MATH experiment compared longer generation, independent sampling, and revision under equal maximum output allowances of 3,072 tokens.
+
+\paragraph{Metrics and evaluation details.} Task 1 measured benchmark accuracy, changes from baseline, weight diagnostics, and conversational behavior. Task 2 evaluated generated answers and reference likelihood under correct, complementary, unrelated, and no-image conditions. Its confidence intervals used 4,000 bootstrap resamples of complete pairs. Task 3 measured selected accuracy, oracle coverage, and computation cost, using 1,000 paired question-bootstrap resamples after averaging reveal orders within questions.
+
+All experiments used seed 6304. Reported intervals capture evaluation uncertainty under the recorded runs. Resource measurements included elapsed time, GPU memory, and checkpoint size where applicable. Offline token cost excluded prefill, score computation, and attention collection, while live generation timings were recorded separately.
+
+% =====================================================================
+\section{Task 1: Mathematical fine-tuning}
+% Author's task introduction, inserted verbatim (refs/escapes only).
+This task studies how mathematical fine-tuning affects specialization and retention. Full FT, L2-SP~\citep{li2018l2sp}, LoRA~\citep{hu2021lora}, and OPLoRA~\citep{xiong2026oplora} restrict updates differently. Benchmarks, weight diagnostics, and generated responses assess their effects on performance and behavior.
+
+L2-SP penalizes movement from the starting parameters \(\theta_0\),
+\[
+\mathcal L=\mathcal L_{\mathrm{SFT}}
++\frac{\lambda}{2}\|\theta-\theta_0\|_2^2.
+\]
+LoRA uses the correction \(\Delta W=(\alpha/r)BA\). OPLoRA also excludes the original matrix's top \(k\) input and output singular directions,
+\[
+\Delta W=\frac{\alpha}{r}
+(I-U_kU_k^\top)BA(I-V_kV_k^\top).
+\]
+The diagnostics measure relative update size, protected-subspace overlap, and the correction's effect on activation \(z\),
+\[
+\eta=\frac{\|\Delta W\|_F}{\|W_0\|_F},
+\qquad
+\rho_k=\frac{\|U_k^\top\Delta W\|_F^2}{\|\Delta W\|_F^2},
+\qquad
+R(z)=\frac{\|\Delta Wz\|_2}{\|W_0z\|_2+10^{-8}}.
+\]
+% Fact sheet (configs/task1.yaml, README "Implementation choices"):
+%   Qwen3-0.6B, enable_thinking=False, seed 6304; first 40,000 eligible MetaMathQA examples
+%   1,250 updates; microbatch 2 x grad-accum 16 = effective batch 32; AdamW (0.9, 0.999), eps 1e-8
+%   weight decay 0.01 (not on <2-D params); cosine schedule, 38 warmup updates; clip 1.0; max length 2,048
+%   FP16 autocast + dynamic loss scaling; FP32 master weights (Full FT); frozen FP16 backbone + FP32 adapters
+%   loss on assistant-response tokens + end-of-turn token, normalized over the effective batch
+%   Full FT: lr 2e-5, lambda 0 | L2-SP: lr 2e-5, lambda 1e-3, theta_0 over all unique params
+%   LoRA: lr 2e-4, (r, alpha) = (4, 8) / (16, 32), dropout 0.05, random A, zero B, no biases,
+%         targets q/k/v/o/gate/up/down_proj; trainable 2,523,136 (r=4) / 10,092,544 (r=16)
+%   OPLoRA: r 16, alpha 32, k 128, same init as LoRA-16; bases in FP32 (33 s, 323 MB)
+%   Eval: lm-eval 0.4.13, zero-shot, FP16; GSM8K gsm8k_cot, chat template, greedy, 1,024-token cap,
+%         flexible-extract; HellaSwag / BoolQ / ARC-Easy candidate likelihood, no chat template
+%   Diagnostics: down_proj, layers 0/13/27, FP32; probes 32 GSM8K + 32 HellaSwag (seed 6304)
+
+
+\begin{table}[t]
+\centering\small
+\input{../results/task1/summary/benchmarks_table.tex}
+\caption{Benchmark accuracy for the baseline and six fine-tuned conditions. Parentheses show changes from baseline in percentage points. GSM8K uses flexible answer extraction, HellaSwag and ARC-Easy use length-normalized accuracy, and BoolQ uses accuracy.}
+\label{tab:t1-bench}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.55\linewidth]{task1/sft_loss.pdf}\hfill
+\includegraphics[width=0.42\linewidth]{task1/tradeoff.pdf}
+\caption{Mathematical fine-tuning loss and performance trade-offs. Left panels show SFT loss using a 25-update moving average, with a closer view after update 100. Right shows GSM8K improvement against the mean change on HellaSwag, BoolQ, and ARC-Easy, in percentage points.}
+\label{fig:t1-loss}
+\end{figure}
+
+
+\begin{table}[t]
+\centering\small
+\input{../results/task1/summary/resources_table.tex}
+\caption{Task 1 resource use across fine-tuning methods. Columns report trainable parameters, training time, peak allocated GPU memory, and final model or adapter checkpoint size. Measurements describe individual runs.}
+\label{tab:t1-res}
+\end{table}
+
+% RQ5 required evidence: author's annotations of the fixed 42-response subset (task1_finetune.summarize, latex_qual).
+% Each cell = Yes/Partially/No counts over 6 responses (2 questions x 3 formats); Truncated = hit the 512-token cap.
+\begin{table}[t]
+\centering\small
+\input{../results/task1/summary/qual_table.tex}
+\caption{Manual annotations of 42 responses, with six responses per condition from two questions in three formats. Entries give Yes/Partially/No counts for each criterion. Truncated counts responses reaching the 512-token limit.}
+\label{tab:t1-qual}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.9\linewidth]{task1/diagnostics.pdf}
+\caption{Update geometry and activation effects in down\_proj at layers 0, 13, and 27. Left shows output-subspace overlap \(\rho_k\), with \(k=128\) and reference level 0.125. Centre shows relative update magnitude \(\eta\). Right compares mean \(R(z)\) on math and non-math probes, with the diagonal marking equal responses.}
+\label{fig:t1-diag}
+\end{figure}
+
+% Connected analysis organized by the research questions (handout: "rather than answering each question
+% separately"). P1 RQ1 methods; P2-P3 RQ2; P3-P5 RQ3 (P5 also RQ1 stages); P6 RQ4; P7-P8 RQ5.
+All methods improved GSM8K, with L2-SP achieving the highest gain, nearly equal to Full FT. Ordinary LoRA gained somewhat less. Full FT declined on BoolQ, while L2-SP and all adapters improved. HellaSwag changed little, and ARC-Easy improved across methods (Table~\ref{tab:t1-bench}). Retention therefore varied by benchmark. The trade-off plot compares mathematical gains with mean non-math changes, although this average hides benchmark differences (Figure~\ref{fig:t1-loss}, right).
+
+With \(\lambda=0.001\), L2-SP's displacement fell from 6.44 at midpoint to 6.27 at final training, while Full FT's rose from 10.02 to 10.66 (Appendix Table~\ref{tab:t1-l2sp}). Smaller displacement accompanied comparable GSM8K gains and better BoolQ performance. Both runs reached similar final SFT loss (Figure~\ref{fig:t1-loss}, left). Increasing ordinary LoRA's rank from 4 to 16 produced slightly higher GSM8K gains, lower loss, and larger relative updates (Figure~\ref{fig:t1-diag}). Both ranks improved BoolQ and ARC-Easy, with learning rate and scaling ratio held fixed.
+
+OPLoRA changed update geometry, but benchmark differences from LoRA-16 were small, with slightly higher HellaSwag and lower scores elsewhere (Table~\ref{tab:t1-bench}). It excluded the original matrices' top 128 input and output singular directions. Nearly zero \(\rho_k\) confirmed output protection in the inspected matrices. Unprotected methods ranged from 0.097 to 0.152, around the dimension-based reference of 0.125 (Figure~\ref{fig:t1-diag}). LoRA-16 already improved BoolQ, leaving no observed decline there for protection to prevent.
+
+Update size also differed from its effect on inputs. At layer 13, LoRA-4 had a smaller relative update than Full FT, 0.0130 versus 0.0160, but a larger math response, 0.0843 versus 0.0551. At layer 27, its update remained smaller, while its math response was also smaller. Math-to-non-math response ratios at layers 0 and 13 were 1.6–2.0 for Full FT and L2-SP, compared with 2.6–4.6 for ordinary LoRA. All methods fell below one at layer 27. OPLoRA's ratios stayed within the unprotected range despite negligible overlap (Figure~\ref{fig:t1-diag}). Update size and overlap alone therefore did not explain input sensitivity or behavior.
+
+From midpoint to final, Full FT gained another 7.43 pp on GSM8K, while BoolQ declined further and ARC-Easy improved. Most of its final BoolQ decline had occurred by midpoint (Table~\ref{tab:t1-bench}). Displacement grew only 6.4\%, with little change in overlap and activation summaries (Appendix Table~\ref{tab:t1-l2sp}, Figure~\ref{fig:t1-diag}). These diagnostics cover three matrices and reuse baseline activations. Math probes used chat templates, while non-math probes used plain text, limiting conclusions about domain selectivity and causality.
+
+Full FT was fastest at 2.47 hours. L2-SP used about 4.5\% more time and 1.11 GiB more memory, including its reference copy (Table~\ref{tab:t1-res}). Ordinary LoRA trained 2.5 or 10.1 million parameters, compared with 596 million for Full FT, and used about one fifth of its GPU memory. Checkpoints fell from 2,395.7 MB to 20.4 or 80.9 MB, although training took longer. OPLoRA took 34\% longer than LoRA-16 and required 323 MB of bases computed in 33 seconds. LoRA combined memory savings and better BoolQ outcomes with smaller math gains~\citep{biderman2024lora}. L2-SP retained Full FT's math gains at greater memory cost. Scores and timings reflect single runs.
+
+The 42-response subset showed changes beyond benchmark accuracy (Table~\ref{tab:t1-qual}). Fully coherent and relevant responses fell from three of six for the baseline to one at each Full FT stage. Some weaknesses already appeared in the baseline. The aligned wish and husband JSON examples were selected to illustrate numerical intrusion and formatting failures (Appendix~\ref{app:t1}, Table~\ref{tab:a1-excerpts}). The baseline echoed the wish offer, while both Full FT stages and L2-SP appended ``The answer is'' followed by 1. On the husband prompt, final Full FT and L2-SP placed prose before JSON, while ordinary LoRA produced no JSON.
+
+Full FT's truncations fell from two at midpoint to one at final training, while mathematical framing persisted. Benchmark scores reflected conversational changes only partly. L2-SP showed full or partial framing in four of six responses despite strong scores, while LoRA-4 had smaller mathematical gains but no framing. No inappropriate content was identified. The subset covers two questions with one greedy response per prompt and condition. Annotations were made with model identities visible, limiting broader conclusions.
+
+% =====================================================================
+\section{Task 2: Visual grounding}
+% Author's task introduction, inserted verbatim (refs/escapes only).
+This task studies how a language model learns to use images through caption alignment, visual instruction tuning, and natural VQA specialization. Correct, complementary~\citep{goyal2017vqa}, unrelated, and no-image conditions test image dependence. Reference likelihood, generated answers, and paired results assess grounding across question types.
+
+A trainable connector maps frozen image features into the language model's embedding space~\citep{liu2023llava}. The connector and later LoRA adapters learn through response-token prediction,
+\[
+h_j=s\,g_\phi(E_{\mathrm{vision}}(I)_j),
+\qquad
+\mathcal L=-\frac1{|\mathcal T|}
+\sum_{t\in\mathcal T}\log p(y_t\mid I,x,y_{<t}).
+\]
+The reference-answer swap penalty measures image dependence,
+\[
+\Delta_{\mathrm{swap}}
+=\mathrm{NLL}(y\mid I_{\mathrm{partner}},x)
+-\mathrm{NLL}(y\mid I_{\mathrm{correct}},x).
+\]
+A positive value means the correct image improves reference likelihood. Generated scores assess accepted answers, while pair accuracy requires success on both images.
+% RQ1 visual interface, RQ2 grounding, RQ3 measuring image use, RQ4 capabilities and cost
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\linewidth]{task2/learning_curves.pdf}
+\caption{Visual-language training across the three curriculum stages. Top panels show training loss and development caption loss. Bottom panels show reference-answer NLL under correct, complementary, and no-image conditions. Dotted lines mark stage boundaries. Training-loss changes also reflect changes in the example mixture.}
+\label{fig:t2-curves}
+\end{figure}
+
+
+
+% Sources: all generated by task2_vlm.evidence from results/task2/{eval,train,data}; it first
+% verifies recomputed values against metrics.csv and bootstrap.json. Per-type intervals use the
+% same pair bootstrap (4,000 resamples, seed 6304) as the saved overall intervals.
+\begin{table}[t]
+\centering\small
+\resizebox{\linewidth}{!}{\input{../results/task2/summary/type_table.tex}}
+\caption{Final visual-grounding results by question type. Grounding uses normalized exact match and VQAv2 uses soft agreement. Pair accuracy requires both canonical answers. Score advantage is correct minus complementary score, while NLL advantage is complementary minus correct NLL. Brackets show 95\% intervals from resampling complete pairs.}
+\label{tab:t2-types}
+\end{table}
+
+
+
+\begin{table}[t]
+\centering\small
+\resizebox{\linewidth}{!}{\input{../results/task2/summary/resources_table.tex}}
+\caption{Visual-language resource use on a Tesla T4. Training times cover update steps and exclude development evaluation and checkpoint saving. Evaluation timings use cached features and batch size eight. Memory values report peak allocated GPU memory.}
+\label{tab:t2-res}
+\end{table}
+
+% Author's connected Task 2 analysis (RQ1 curriculum: paras 2-3; RQ2 grounding: paras 1, 4;
+% RQ3 measuring image use: paras 4-6; RQ4 capabilities and cost: paras 4, 7-8). Inserted verbatim;
+% only refs, LaTeX escapes and quotes changed.
+Correct images improved scores on both final-test suites (Table~\ref{tab:t2-types} and Appendix Table~\ref{tab:t2-final}). Grounding scored 64.1\% with correct images and 12.5\% with complementary images. Natural VQA scored 54.1\% and 27.9\%. Their advantages were +51.6 pp [37.5, 64.1] and +26.2 pp [17.1, 35.5], using 95\% bootstrap intervals over complete pairs. Reference NLL also favoured correct images.
+
+During caption alignment, development caption loss fell from 5.337 to 2.408, although answer NLL worsened later in the stage (Figure~\ref{fig:t2-curves}). Visual instruction tuning then reduced grounding NLL from 4.775 to 0.727 and natural VQA NLL from 6.302 to 2.769. Swap penalties reached 2.254 and 0.703. Natural-answer fit therefore improved before direct natural VQA training. These measurements cover 24 grounding and 32 natural development pairs (Appendix Figure~\ref{fig:t2-swap}, left, and Appendix Table~\ref{tab:a2-dev}).
+
+Natural specialization lowered natural VQA NLL to 1.733 and raised its swap penalty to 0.917. Grounding NLL stayed low at 0.697, but its penalty fell to 1.719. Caption loss rose slightly from 2.361 to 2.380. Earlier reference fit largely persisted, while image separation changed. Replay's contribution cannot be isolated, and training-loss comparisons reflect different mixtures. Generated captions and intermediate-stage answer accuracy were not evaluated.
+
+Presence scored 90.6\%, compared with 37.5\% for counting (Table~\ref{tab:t2-types}). Counting was only modestly above always answering ``1'' at 31.2\% or using unrelated images at 32.8\%. Unrelated-image presence reached 53.1\%, with ``no'' predicted on 60/64 questions (Appendix Table~\ref{tab:a2-diag}). Greedy decoding reproduced the partner images' existing predictions in all 320 swaps, making the decomposition another view of those outputs. Counting, natural number, and other swaps returned neither canonical answer in 46.9\%, 41.7\%, and 43.1\% of responses (Appendix Figure~\ref{fig:t2-swap}, right, and Appendix Tables~\ref{tab:a2-swap} and~\ref{tab:a2-diag}).
+
+Natural yes/no scored 73.1\% individually and had a positive NLL advantage of 0.52 [0.29, 0.80]. Yet pair accuracy was 38.9\%, with identical answers on 58.3\% of pairs (Table~\ref{tab:t2-types}). Likelihood and individual scores supported image usefulness, while pair metrics exposed poor differentiation. The measurements therefore agreed only partly on grounding quality.
+
+The examples discussed here were selected as the first pair from each type's most frequent outcome. Appendix Tables~\ref{tab:a2-qual-presence}--\ref{tab:a2-qual-other} show the first pair for every outcome. The oven pair matched both references. Natural number predictions were 2 and 4 against references 2 and 5, while both fruit answers were ``apple.'' Inspection covered 44/128 grounding examples and questioned 8/22 counting labels, including both TV references. Three presence disagreements involving handbag and mouse examples also leave reference correctness uncertain, limiting interpretation of annotation-derived scores as visual correctness.
+
+No-image outputs scored zero but often became full sentences, with median lengths of 34–73 characters across types (Appendix Table~\ref{tab:a2-diag}). Some began with the reference answer but failed short-reference matching. Removing visual tokens also shortened the prefix and changed positions, complicating attribution of the score drop.
+
+LoRA increased trainable parameters from 1.84 million to 6.42 million (Table~\ref{tab:t2-res}). Each stage used a fresh AdamW optimizer while carrying trained connector and existing LoRA weights forward. Gradient scaling skipped nine of 4,500 scheduled updates after overflow, while the learning-rate schedule and data position advanced. Training updates took 1.61 hours on a T4, excluding development evaluation and checkpoint saving. Peak memory was 1.54 GiB during training and 1.89 GiB during evaluation. Table~\ref{tab:t2-res} reports feature-caching costs and batched generation timings. Longer no-image responses accompanied slower generation. The accuracy–cost effect of 49-token compression remains untested.
+
+% =====================================================================
+\section{Task 3: Test-time computation}
+% Author's task introduction, inserted verbatim (refs/escapes only).
+This task studies how additional inference computation affects accuracy and cost. Sampling, score-based selection, and consensus~\citep{wang2022sc} are evaluated on MATH and MathVista. Adaptive stopping~\citep{aggarwal2023adaptive} controls the number of attempts, while live generation compares longer responses, independent attempts, and revision~\citep{madaan2023selfrefine}.
+
+Oracle coverage and selected accuracy separate generation and selection failures,
+\[
+1-\mathrm{Accuracy}_N
+=(1-\mathrm{Oracle}_N)
++(\mathrm{Oracle}_N-\mathrm{Accuracy}_N).
+\]
+Candidates are scored using mean token log-probability or self-certainty~\citep{kang2025selfcertainty},
+\[
+L_i=\operatorname{mean}_t\log p_{i,t}(y_{i,t}),
+\qquad
+K_i=\operatorname{mean}_tD_{\mathrm{KL}}(U\|p_{i,t}).
+\]
+Rank-weighted consensus (RWC)~\citep{usman2026visconf} sums weights \(w_i=(N-r_i)/(N-1)\) within answer groups, with rank 1 receiving the highest weight. On MathVista, VisConf combines normalized self-certainty \(c\) and visual engagement \(v\),
+\[
+Z_i=\bar c_i\bar v_i,
+\qquad
+Z_i^{\mathrm{tok}}=\overline{c_iv_i}.
+\]
+Adaptive stopping checks agreement and optional quality conditions before continuing.
+% RQ1 exploration/selection, RQ2 evidence/consensus, RQ3 breadth/refinement, RQ4 adaptive, RQ5 compute/reliability
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\linewidth]{task3/accuracy_vs_n.pdf}
+\caption{Held-out accuracy and oracle coverage across candidate budgets on MATH and MathVista. Results average ten reveal orders per question. Shaded bands show 95\% question-bootstrap intervals for selected accuracy. Oracle coverage measures whether any candidate is correct.}
+\label{fig:t3-acc}
+\end{figure}
+
+
+
+% Sources: all generated by task3_ttc.evidence from results/task3/{offline,signals,adaptive,live};
+% it first checks per-question results against the summary CSVs, re-simulates the selected stopping
+% policies and rebuilds the live summary from generations.jsonl.
+% Differences vs SC: paired question bootstrap, 1,000 resamples, after averaging over 10 orders.
+\begin{table}[t]
+\centering\small
+\resizebox{\linewidth}{!}{\input{../results/task3/summary/methods_diff_table.tex}}
+\caption{Selection methods at \(N=32\) on 800 held-out questions per dataset. Accuracy averages ten reveal orders. Differences and paired 95\% question-bootstrap intervals use self-consistency as the reference. Oracle coverage and mean generated-token costs are shown below.}
+\label{tab:t3-methods}
+\end{table}
+
+% Source: results/task3/signals/{summary.json,conf_vision_per_rollout.csv}. "Mixed" = questions
+% with both correct and incorrect rollouts in the pool of 32.
+\begin{table}[t]
+\centering\small
+\resizebox{\linewidth}{!}{\input{../results/task3/summary/signals_table.tex}}
+\caption{Candidate-score diagnostics at \(N=32\) on questions containing both correct and incorrect responses. Quartile contrasts measure top-minus-bottom correctness in percentage points. Length associations use Spearman correlation. The final row summarizes token-level confidence–vision relationships within MathVista rollouts.}
+\label{tab:t3-signals}
+\end{table}
+
+% Source: results/task3/live/{summary.csv,meta.json}; 50 MATH questions, one call set per question.
+\begin{table}[t]
+\centering\small
+\resizebox{\linewidth}{!}{\input{../results/task3/summary/live_table.tex}}
+\caption{Live generation on 50 MATH questions under a 3,072-token output allowance per strategy. Token counts and generation times are means per question. Sequential revision includes the shared initial response. Any truncation counts a capped call, while final truncation concerns the final response.}
+\label{tab:t3-live}
+\end{table}
+
+
+% Source: results/task3/adaptive/selected_policies.json (settings frozen on the dev split).
+\begin{table}[t]
+\centering\small
+\resizebox{\linewidth}{!}{\input{../results/task3/summary/adaptive_table.tex}}
+\caption{Held-out adaptive stopping results using development-selected thresholds. Differences and paired 95\% intervals compare accuracy with fixed-32 self-consistency. Tokens and rollouts are means per question. Wrong early counts incorrect stops before 32 among all question-order runs. Fixed 32 right gives the fraction of those errors corrected by full-pool voting.}
+\label{tab:t3-adaptive}
+\end{table}
+
+
+% Author's connected Task 3 analysis (RQ1 exploration/selection: para 1; RQ2 evidence/consensus:
+% paras 2-3, 7; RQ3 breadth/refinement: para 4; RQ4 adaptive allocation: paras 5-6;
+% RQ5 compute/reliability: para 8). Inserted verbatim; only refs, minus signs, 	exttt IDs, escapes changed.
+Sampling increased coverage faster than selected accuracy (Figure~\ref{fig:t3-acc}). From one to 32 candidates, MATH coverage rose from 64.3\% to 91.4\%, while self-consistency reached 73.8\%. MathVista coverage rose from 53.6\% to 89.5\%, with self-consistency reaching 63.1\%. Correct answers were available but missed on 17.6\% and 26.4\% of questions, compared with 8.6\% and 10.5\% having none (Appendix Figure~\ref{fig:t3-dec} and Appendix Table~\ref{tab:a3-dec}). Selection was the larger remaining failure category. The pools averaged only 5.91 and 4.91 answer groups, showing substantial repetition (Appendix Tables~\ref{tab:a3-byn-math} and~\ref{tab:a3-byn-mathvista}).
+
+Consensus improved score use (Table~\ref{tab:t3-methods}). Maximum self-certainty scored 70.6\% on MATH, compared with 75.5\% using RWC. The weighted vote exceeded self-consistency by +1.8 pp [0.7, 2.9], with a paired 95\% question-bootstrap interval after order averaging. MathVista's highest score was 64.5\% with VisConf and RWC, but its +1.4 pp interval [$-0.1$, 2.8] left the advantage uncertain.
+
+Among questions with both correct and incorrect candidates, self-certainty's top-minus-bottom quartile contrast was +20.4 pp on MATH and +4.4 pp on MathVista. MathVista shortness achieved +5.1 pp, exceeding self-certainty and visual engagement (+4.8 pp). Visual engagement correlated $-0.69$ with length. VisConf reached +9.3 pp, although these associations do not isolate a length-independent effect (Table~\ref{tab:t3-signals} and Appendix Table~\ref{tab:a3-signals}). Tokenwise fusion scored 63.9\% with RWC, versus 64.5\% for rollout-level VisConf. No direct paired interval was reported. The selected trajectories include a case where tokenwise fusion chose incorrectly while VisConf chose correctly (Appendix Figure~\ref{fig:a3-traj}).
+
+On 50 live MATH questions, longer generation scored 62\%, independent sampling 54\%, and revision 58\%. Under equal 3,072-token allowances, mean output use was 761, 1,860, and 1,240 tokens. Generation took 38.4, 92.5, and 62.7 seconds per question (Table~\ref{tab:t3-live}). All 25 capped parallel responses lacked an extracted answer. Voting returned no answer on 11 questions, including four containing a correct candidate (Appendix Table~\ref{tab:a3-live}). Revision raised extraction from 80\% for the shared initial response to 98\%, but correct answers rose only from 28 to 29. Its sole recovery completed a truncated response. The small sample and differing truncation rates limit the strategy ranking.
+
+Adaptive policies were selected on development data (Appendix Table~\ref{tab:a3-devgrid}). MATH agreement stopping reached 73.6\% with 10,139 tokens, versus 73.8\% and 21,347 tokens for fixed-32 self-consistency. Its difference was $-0.15$ pp [$-0.50$, 0.16]. Quality-aware stopping used 7,663 tokens for 73.2\%, with a difference of $-0.61$ pp [$-1.20$, $-0.06$] (Table~\ref{tab:t3-adaptive}). On MathVista, adding the quality condition at the same \(\tau=0.5\) raised cost from 3,060 to 3,428 tokens and accuracy from 62.1\% to 62.5\%. Wrong early stops fell from 24.6\% to 21.7\% of question-order runs. Agreement's difference from fixed 32 was $-1.05$ pp [$-2.08$, 0.13]. Zero lies within this interval, leaving the accuracy loss uncertain.
+
+Fixed-32 voting would correct only 7.7\% of MATH agreement's wrong early stops. The corresponding rates were 11.4\% for MATH quality and 17.5\% and 15.6\% for MathVista agreement and quality. More attempts therefore offered limited recovery under the same selector. MathVista agreement scored 62.1\% with 3,060 tokens, versus fixed-16 self-consistency at 61.9\% with 4,462 tokens. This comparison is descriptive because reported intervals use fixed 32 as the reference (Appendix Figure~\ref{fig:t3-adaptive}). MATH self-certainty with RWC at 16 candidates reached 74.7\% with 10,678 tokens. Comparing it with adaptive agreement changes both selection and stopping, so their contributions cannot be isolated.
+
+Examples were selected as the first qualifying held-out question in split order, using reveal order zero (Appendix Table~\ref{tab:a3-qual}). On \texttt{test:2460}, weighting resolved an 11-vote tie correctly, while other cases show it overturning a correct plurality. On \texttt{test:1803}, stopping accepted a wrong answer with 75\% support after eight candidates, while fixed-32 voting recovered the correct answer.
+
+Moderate budgets and adaptive stopping offered practical accuracy–cost balances. Increasing self-consistency from eight to 32 candidates added only 2.0 pp on MATH and 2.6 pp on MathVista for roughly four times the tokens (Appendix Tables~\ref{tab:a3-byn-math} and~\ref{tab:a3-byn-mathvista}). At the same budget, MATH self-certainty weighting improved accuracy using the same generation tokens, with extra score-computation cost. Offline costs exclude prefill, scoring, and attention collection. The live comparison covers 50 questions, while different models and datasets limit attribution of MATH–MathVista differences to vision. Results also depend on the fixed grader and its fallback (Appendix Table~\ref{tab:a3-setup}).
+
+\section{Conclusion}
+% Author's conclusion, inserted verbatim.
+Across the three tasks, performance gains depended on how models were adapted, evaluated, and given additional computation. Mathematical fine-tuning improved GSM8K across all methods, but retention varied by capability. L2-SP achieved nearly the same mathematical gain as Full FT with better BoolQ outcomes. LoRA reduced memory requirements while achieving smaller mathematical gains. Orthogonal protection changed update geometry without a clear benchmark advantage. Conversational examples also showed that strong benchmark results could accompany formatting failures and mathematical intrusion.
+
+The visual-language curriculum improved reference fit and made correct images more useful. However, grounding remained uneven across question types. Counting stayed close to simple baselines, while repeated answers exposed weaknesses hidden by individual scores. Label uncertainty and changes in no-image response format further limited interpretation. Reference likelihood, generated answers, and pair metrics therefore captured different aspects of image use.
+
+Additional test-time sampling increased correct-answer coverage faster than selected accuracy. Consensus helped convert candidate scores into better selections, while adaptive stopping reduced token use with comparatively small accuracy changes. At a fixed candidate budget, weighting improved MATH accuracy using the same generation tokens, although score computation added cost. The live experiment showed limited benefit from revision, with its sole successful recovery completing a truncated response.
+
+These conclusions remain bounded by single training runs, selected evaluation subsets, limited diagnostic coverage, and fixed grading rules. Broader claims about retention, grounding, and reasoning require evidence across additional runs and evaluation conditions.
+
+\clearpage  % place all main-report floats before the references and appendix
+% Handout readings without a matching topic in this report are listed without an in-text citation.
+\nocite{yao2023tot,lightman2023verify}
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+\section{Task 1: supplementary evidence}
+\label{app:t1}
+% All tables generated by task1_finetune.appendix (called from task1_finetune.summarize) into
+% results/task1/summary/appendix/; every value traces to a file under results/task1.
+
+% Sources: configs/task1.yaml, results/task1/data/train_selection_stats.json.
+\begin{table}[ht]
+\centering\small
+\input{../results/task1/summary/appendix/config.tex}
+\caption{Task 1 training data, shared optimization settings, and method-specific hyperparameters. Adapter ranks and scales maintain \(\alpha/r=2\), while OPLoRA protects the top 128 singular directions.}
+\label{tab:a1-config}
+\end{table}
+
+% Source: results/task1/summary/benchmarks.csv (results/task1/eval/*/scores*.json).
+% GSM8K strict-match is 0.00 for every condition, including the baseline; the primary score is flexible-extract.
+% Truncation = response reached the 1,024-token generation cap. Merge = max |logit difference| between merged
+% and unmerged adapters on a small batch in FP32 (adapter methods only).
+\begin{table}[ht]
+\centering\small
+\resizebox{\linewidth}{!}{\input{../results/task1/summary/appendix/eval_details.tex}}
+\caption{Additional benchmark and evaluation checks. Columns report GSM8K strict-match accuracy, truncation, extraction, and response length, unnormalized HellaSwag and ARC-Easy accuracy, and maximum FP32 logit differences between merged and unmerged adapters.}
+\label{tab:a1-eval}
+\end{table}
+
+% Source: results/task1/summary/gsm8k_transitions.csv. Per-question change vs baseline on 1,319 GSM8K test items;
+% Net / 1,319 equals the GSM8K change in Table \ref{tab:t1-bench}.
+\begin{table}[ht]
+\centering\small
+\input{../results/task1/summary/appendix/gsm8k_transitions.tex}
+\caption{GSM8K question-level changes from baseline across 1,319 questions. Wrong-to-right counts corrected answers, right-to-wrong counts newly incorrect answers, and net gives their difference.}
+\label{tab:a1-trans}
+\end{table}
+
+% Source: results/task1/train/l2sp/log.jsonl (task1_finetune.summarize, plot_l2sp).
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{task1/l2sp_penalty.pdf}
+\caption{L2-SP proximity penalty during training. Left shows \(\Omega(\theta,\theta_0)\). Right compares SFT loss with the weighted penalty \(\lambda\Omega\), using \(\lambda=10^{-3}\).}
+\label{fig:a1-l2sp}
+\end{figure}
+
+% Source: results/task1/train/*/summary.json. Total params include frozen weights; s/update = train time / 1,250.
+% Recovery checkpoint = weights + optimizer state kept for resuming.
+% Moved from the main report for the page limit.
+% RQ2 required evidence: penalty strength and parameter displacement (task1_finetune.summarize, latex_l2sp).
+% mid = update 625, final = update 1,250; lambda*Omega and SFT loss = means over updates 1,151-1,250.
+\begin{table}[ht]
+\centering\small
+\input{../results/task1/summary/l2sp_table.tex}
+\caption{Proximity regularization and parameter displacement for Full FT and L2-SP. Midpoint and final correspond to updates 625 and 1,250. Weighted penalty and SFT loss are means over the final 100 updates.}
+\label{tab:t1-l2sp}
+\end{table}
+
+\begin{table}[ht]
+\centering\small
+\resizebox{\linewidth}{!}{\input{../results/task1/summary/appendix/resource_details.tex}}
+\caption{Additional Task 1 resource measurements, including update time, peak reserved memory, recovery-checkpoint size, skipped updates, and method-specific reference or projection overhead.}
+\label{tab:a1-res}
+\end{table}
+
+% Source: results/task1/diagnostics/weight_space.csv. down_proj, k = 128.
+% rho_k = ||U_k^T dW||_F^2 / ||dW||_F^2 (random level 0.125); input share = ||dW V_k||_F / ||dW||_F
+% (random level sqrt(128/3072) = 0.204); eta = ||dW||_F / ||W0||_F.
+\begin{table}[ht]
+\centering\small
+\input{../results/task1/summary/appendix/weight_space.tex}
+\caption{Weight diagnostics for down\_proj at layers 0, 13, and 27. Columns report output overlap \(\rho_k\), input share \(\|\Delta WV_k\|_F/\|\Delta W\|_F\), relative magnitude \(\eta\), and update norm. The input share is unsquared.}
+\label{tab:a1-weight}
+\end{table}
+
+% Source: results/task1/diagnostics/activation_summary.csv, activation_ratio.csv.
+% R(z) = ||dW z|| / (||W0 z|| + 1e-8), z from the starting model (FP32, last prompt token);
+% 32 GSM8K (math) and 32 HellaSwag (non-math) probes; std across the 32 probes.
+\begin{table}[ht]
+\centering\small
+\input{../results/task1/summary/appendix/activations.tex}
+\caption{Activation correction \(R(z)\) on 32 math and 32 non-math probes per layer. Entries report means and sample standard deviations. The final column divides mean math response by mean non-math response. Activations come from the starting model.}
+\label{tab:a1-act}
+\end{table}
+
+% Source: results/task1/qualitative/auto_flags_by_condition.csv. All 168 responses (24 prompts per condition);
+% JSON valid and template filled are out of the 8 prompts of that format.
+\begin{table}[ht]
+\centering\small
+\input{../results/task1/summary/appendix/auto_flags.tex}
+\caption{Automatic response checks across 168 qualitative generations, with 24 per condition. Columns summarize truncation, response length, JSON validity, template completion, mean repeated four-gram ratio, and heuristic math-marker counts.}
+\label{tab:a1-flags}
+\end{table}
+
+% Source: results/task1/qualitative/annotation_sheet_42.csv; the two groups selected in RQ5.
+% Whitespace collapsed; responses longer than 300 characters keep the first 170 and last 110 characters.
+% T = truncated at the 512-token cap.
+\begin{table}[ht]
+\centering\small
+\input{../results/task1/summary/appendix/excerpts.tex}
+\caption{Aligned excerpts for the plain wish and husband JSON prompts, selected to illustrate numerical intrusion and formatting failures. Responses share the same prompt across conditions. T marks truncation at the generation limit.}
+\label{tab:a1-excerpts}
+\end{table}
+
+\clearpage
+\section{Task 2: supplementary evidence}
+\label{app:t2}
+% All tables generated by task2_vlm.evidence into results/task2/summary/appendix/.
+
+% Sources: configs/task2.yaml, results/task2/train/connector_calibration.json.
+\begin{table}[ht]
+\centering\small
+\input{../results/task2/summary/appendix/settings.tex}
+\caption{Visual-language architecture, connector scaling, trainable components, optimization settings, token limits, generation settings, and bootstrap configuration.}
+\label{tab:a2-settings}
+\end{table}
+
+% Sources: configs/task2.yaml, results/task2/train/log.jsonl.
+\begin{table}[ht]
+\centering\scriptsize
+\resizebox{\linewidth}{!}{\input{../results/task2/summary/appendix/curriculum.tex}}
+\caption{Configured and realized visual-language curriculum. Skipped updates reflect gradient-scaling overflows, while the learning-rate schedule and data position continue to advance. Trained connector and existing adapter weights carry across stages.}
+\label{tab:a2-curriculum}
+\end{table}
+
+% Sources: results/task2/data/*.json. Image-disjoint suites independently rechecked.
+\begin{table}[ht]
+\centering\small
+\input{../results/task2/summary/appendix/data.tex}
+\caption{Visual-language data construction and split sizes. Counts distinguish images, caption examples, and complementary pairs. Unrelated-image evaluation uses a fixed mapping within each test suite.}
+\label{tab:a2-data}
+\end{table}
+
+% Source: results/task2/train/dev_log.jsonl.
+\begin{table}[ht]
+\centering\small
+\resizebox{\linewidth}{!}{\input{../results/task2/summary/appendix/dev_log.tex}}
+\caption{Development measurements across the visual-language curriculum. Reference-answer NLL is shown under correct, complementary, and no-image conditions. \(\Delta\) is complementary minus correct NLL, so positive values favour the correct image.}
+\label{tab:a2-dev}
+\end{table}
+
+% Source: results/task2/eval/predictions.csv (results/task2/summary/by_type.csv).
+% Moved from the main report for the page limit; Table~\ref{tab:t2-types} keeps the suite-level rows.
+\begin{table}[ht]
+\centering\small
+\resizebox{\linewidth}{!}{\input{../results/task2/summary/final_table.tex}}
+\caption{Final-test results under four image conditions. Scores use grounding exact match or VQAv2 soft agreement, with 95\% pair-bootstrap intervals. Pair accuracy requires both canonical answers. Identical and empty rates are percentages, and generation time is seconds per answer.}
+\label{tab:t2-final}
+\end{table}
+
+\begin{table}[ht]
+\centering\small
+\input{../results/task2/summary/appendix/by_type.tex}
+\caption{Visual-language results by question type and image condition. Scores include 95\% pair-bootstrap intervals. Pair accuracy measures joint canonical correctness, identical measures repeated answers within pairs, and reference NLL measures teacher-forced answer fit.}
+\label{tab:a2-bytype}
+\end{table}
+
+% Source: results/task2/eval/predictions.csv.
+\begin{table}[ht]
+\centering\small
+\input{../results/task2/summary/appendix/swap.tex}
+\caption{Responses under complementary images, classified as matching the partner reference, retaining the original reference, or matching neither. Counts and percentages are reported by question type.}
+\label{tab:a2-swap}
+\end{table}
+
+% Moved from the main report for the page limit (task2_vlm.evidence).
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{task2/swap_evidence.pdf}
+\caption{Image-swap evidence. Left shows development reference-NLL penalties, computed as complementary minus correct-image NLL, with stage boundaries marked. Right classifies final-test swap responses by agreement with the partner reference, original reference, or neither. Bar widths show percentages and labels show counts. Swaps reproduce the partner images' existing greedy predictions.}
+\label{fig:t2-swap}
+\end{figure}
+
+% Source: results/task2/eval/predictions.csv.
+\begin{table}[ht]
+\centering\small
+\input{../results/task2/summary/appendix/diagnostics.tex}
+\caption{Checks supporting interpretation of image controls. Rows summarize no-image response openings and lengths, presence-answer bias, counting-reference frequencies, and agreement between swap outputs and the partner images' existing predictions.}
+\label{tab:a2-diag}
+\end{table}
+
+% Tables below: first test pair in file order for each outcome (task2_vlm/evidence.py).
+% References list every answer with its count. No-image responses stop at 16 new tokens.
+% Main-text example table removed for the page limit; its pairs appear in the tables below.
+% Selection rule (task2_vlm/evidence.py; picks in results/task2/summary/qualitative_selection.json):
+% every test pair has one outcome from its two correct-image responses: both right, identical,
+% or changed but not both right. Main table: per type, the first pair in file order with that
+% type's most frequent outcome. Appendix: first pair for every type x outcome.
+% VQAv2 references show the consensus answer and its count out of ten.
+\begin{table}[p]
+\centering\scriptsize
+\setlength{\tabcolsep}{3pt}
+\input{../results/task2/summary/appendix/qual_presence.tex}
+\caption{Presence examples under all four image conditions. The first pair in file order is shown for each observed outcome. Outcomes describe agreement with recorded references.}
+\label{tab:a2-qual-presence}
+\end{table}
+
+\begin{table}[p]
+\centering\scriptsize
+\setlength{\tabcolsep}{3pt}
+\input{../results/task2/summary/appendix/qual_counting.tex}
+\caption{Counting examples under all four image conditions. The first pair in file order is shown for each observed outcome. Predictions are compared with recorded counts, whose quality is examined separately.}
+\label{tab:a2-qual-counting}
+\end{table}
+
+\begin{table}[p]
+\centering\scriptsize
+\setlength{\tabcolsep}{3pt}
+\input{../results/task2/summary/appendix/qual_yes_no.tex}
+\caption{Natural yes/no examples under all four image conditions. The first pair in file order is shown for each observed outcome. References include human-answer frequencies.}
+\label{tab:a2-qual-yesno}
+\end{table}
+
+\begin{table}[p]
+\centering\scriptsize
+\setlength{\tabcolsep}{3pt}
+\input{../results/task2/summary/appendix/qual_number.tex}
+\caption{Natural number examples under all four image conditions. The first pair in file order is shown for each observed outcome. Human-answer frequencies support comparison with the generated counts.}
+\label{tab:a2-qual-number}
+\end{table}
+
+\begin{table}[p]
+\centering\scriptsize
+\setlength{\tabcolsep}{3pt}
+\input{../results/task2/summary/appendix/qual_other.tex}
+\caption{Natural other-question examples under all four image conditions. The first pair in file order is shown for each observed outcome, with human-answer frequencies and generated responses.}
+\label{tab:a2-qual-other}
+\end{table}
+
+\clearpage
+\section{Task 3: supplementary evidence}
+\label{app:t3}
+% All tables and figures generated by task3_ttc.evidence into results/task3/summary/appendix/
+% and report/figures/task3/.
+
+% Sources: results/task3/{data_stats.json,grader.json,offline/meta.json,live/meta.json}, configs/task3.yaml.
+\begin{table}[ht]
+\centering\small
+\input{../results/task3/summary/appendix/setup.tex}
+\caption{Task 3 data, grading, splits, candidate budgets, bootstrap settings, adaptive search space, and live-generation configuration. Missing extracted answers form one incorrect answer group. The MATH grading fallback is recorded.}
+\label{tab:a3-setup}
+\end{table}
+
+% Source: results/task3/offline/summary_math_{eval,dev}.csv.
+\begin{table}[ht]
+\centering\small
+\resizebox{\linewidth}{!}{\input{../results/task3/summary/appendix/by_n_math.tex}}
+\caption{MATH held-out accuracy across candidate budgets, averaged over ten reveal orders. Additional rows report oracle coverage, distinct answer groups, and mean generated tokens. The final column gives development accuracy at \(N=32\).}
+\label{tab:a3-byn-math}
+\end{table}
+
+% Source: results/task3/offline/summary_mathvista_{eval,dev}.csv.
+\begin{table}[ht]
+\centering\small
+\resizebox{\linewidth}{!}{\input{../results/task3/summary/appendix/by_n_mathvista.tex}}
+\caption{MathVista held-out accuracy across candidate budgets, averaged over ten reveal orders. Additional rows report oracle coverage, distinct answer groups, and mean generated tokens. The final column gives development accuracy at \(N=32\).}
+\label{tab:a3-byn-mathvista}
+\end{table}
+
+% Source: results/task3/offline/decomposition_*_eval.csv.
+% Moved from the main report for the page limit; the text gives all four values.
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\linewidth]{task3/failure_decomposition.pdf}
+\caption{Self-consistency outcomes across candidate budgets. Each bar separates correct selection, an available correct answer being missed, and no correct candidate. Percentages average ten reveal orders over the held-out questions.}
+\label{fig:t3-dec}
+\end{figure}
+
+\begin{table}[ht]
+\centering\small
+\resizebox{\linewidth}{!}{\input{../results/task3/summary/appendix/decomposition.tex}}
+\caption{Failure decomposition by method and candidate budget. Each cell gives the percentage with an available correct answer missed, followed by the percentage with no correct candidate. FirstAns uses only the first response, while coverage refers to the displayed pool.}
+\label{tab:a3-dec}
+\end{table}
+
+% Source: results/task3/signals/summary.json.
+\begin{table}[ht]
+\centering\small
+\resizebox{\linewidth}{!}{\input{../results/task3/summary/appendix/signals.tex}}
+\caption{Candidate-score analysis on all held-out questions and on questions containing both correct and incorrect candidates. Columns report top- and bottom-quartile accuracy, their difference in percentage points, and Spearman correlation with response length.}
+\label{tab:a3-signals}
+\end{table}
+
+% Source: results/task3/signals/trajectories.json. Rule (task3_ttc/signals.py): first three held-out
+% MathVista questions whose VisConf-top and tokenwise-VisConf-top rollouts differ. Thin lines raw,
+% thick lines a centred 15-token moving average.
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{task3/trajectories.pdf}
+\caption{Token-level normalized self-certainty \(c_t\) and visual engagement \(v_t\) for the first three held-out MathVista questions where rollout-level and tokenwise VisConf select different candidates. Left and right columns show their respective selections. Both choices are correct for questions 99 and 155, while tokenwise fusion selects incorrectly for question 220.}
+\label{fig:a3-traj}
+\end{figure}
+
+% Source: results/task3/adaptive/dev_grid_*.csv; bold rows are the selected settings.
+\begin{table}[ht]
+\centering\scriptsize
+\begin{minipage}[t]{0.48\linewidth}\centering MATH\\[2pt]\resizebox{\linewidth}{!}{\input{../results/task3/summary/appendix/dev_grid_math.tex}}\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}\centering MathVista\\[2pt]\resizebox{\linewidth}{!}{\input{../results/task3/summary/appendix/dev_grid_mathvista.tex}}\end{minipage}
+\caption{Development search for adaptive stopping thresholds. Each setting reports accuracy, mean generated tokens, and mean rollouts. Selection minimizes token cost while remaining within one percentage point of development fixed-32 self-consistency, using unrounded values.}
+\label{tab:a3-devgrid}
+\end{table}
+
+% Moved from the main report for the page limit; Table~\ref{tab:t3-adaptive} keeps the fixed-budget rows.
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{task3/adaptive_cost.pdf}
+\caption{Held-out accuracy against mean generated tokens per question. Curves show fixed candidate budgets, with labels identifying \(N\). Adaptive points use thresholds selected on development data. Token cost excludes prefill, score computation, and attention collection.}
+\label{fig:t3-adaptive}
+\end{figure}
+
+% Source: results/task3/live/generations.jsonl.
+\begin{table}[ht]
+\centering\small
+\input{../results/task3/summary/appendix/live_detail.tex}
+\caption{Paired live outcomes across the same 50 MATH questions. Counts separate joint correctness and strategy disagreements. Additional rows report parallel truncation, missing answers, candidate coverage, and extraction changes after revision.}
+\label{tab:a3-live}
+\end{table}
+
+% Main-text case table removed for the page limit; its three cases appear in this table.
+% Selection rules: task3_ttc/evidence.py docstring; IDs in results/task3/summary/qualitative_selection.json.
+\begin{table}[ht]
+\centering\scriptsize
+\input{../results/task3/summary/appendix/qual.tex}
+\caption{Selected answer-selection disagreements, live revisions, and premature stops. Cases use the first qualifying held-out question for each outcome, with reveal order zero for offline comparisons. Rows report references, selected answers, vote counts, and relevant response excerpts.}
+\label{tab:a3-qual}
+\end{table}
+
+\clearpage
+\section{Additional results}
+\AUTHOR{appendix}
+\end{document}

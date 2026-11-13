@@ -1,0 +1,16 @@
+\begin{tabular}{lccccccc}
+\toprule
+Held-out acc.\ (\%) & $N=1$ & $N=2$ & $N=4$ & $N=8$ & $N=16$ & $N=32$ & Dev, $N=32$ \\
+\midrule
+FirstAns & 64.3 & 64.3 & 64.3 & 64.3 & 64.3 & 64.3 & 74.0 \\
+Self-consistency & 64.3 & 64.3 & 69.2 & 71.8 & 73.1 & 73.8 & 82.5 \\
+Max log-prob & 64.3 & 65.8 & 67.2 & 67.5 & 66.4 & 64.0 & 70.5 \\
+Max self-certainty & 64.3 & 66.8 & 68.8 & 70.1 & 70.7 & 70.6 & 75.5 \\
+Log-prob + RWC & 64.3 & 65.8 & 68.5 & 72.2 & 74.0 & 74.9 & 82.5 \\
+Self-certainty + RWC & 64.3 & 66.8 & 69.7 & 72.9 & 74.7 & 75.5 & 82.5 \\
+Shortest & 64.3 & 65.3 & 65.2 & 64.6 & 63.2 & 62.4 & 76.0 \\ \midrule
+Oracle coverage & 64.3 & 72.5 & 79.1 & 84.3 & 88.5 & 91.4 &  \\
+Distinct answer groups & 1.00 & 1.37 & 1.93 & 2.74 & 4.00 & 5.91 &  \\
+Mean tokens (all $N$) & 670 & 1,340 & 2,680 & 5,344 & 10,678 & 21,347 &  \\
+\bottomrule
+\end{tabular}

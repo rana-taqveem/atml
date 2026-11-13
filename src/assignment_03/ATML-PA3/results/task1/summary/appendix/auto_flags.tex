@@ -1,0 +1,13 @@
+\begin{tabular}{lcccccc}
+\toprule
+Condition & Truncated & \shortstack{Mean\\tokens} & \shortstack{JSON\\valid} & \shortstack{Template\\filled} & \shortstack{Repeated\\4-gram} & \shortstack{Math\\markers} \\
+\midrule
+Baseline & 1/24 & 100.6 & 8/8 & 8/8 & 0.054 & 0 \\
+Full FT (mid) & 4/24 & 193.8 & 2/8 & 8/8 & 0.313 & 0 \\
+Full FT & 3/24 & 173.0 & 2/8 & 7/8 & 0.245 & 0 \\
+Full FT + L2-SP & 3/24 & 157.5 & 2/8 & 8/8 & 0.141 & 0 \\
+LoRA-4 & 3/24 & 130.9 & 3/8 & 8/8 & 0.154 & 1 \\
+LoRA-16 & 1/24 & 134.8 & 3/8 & 8/8 & 0.186 & 0 \\
+OPLoRA-16 & 2/24 & 149.5 & 2/8 & 8/8 & 0.131 & 0 \\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,10 @@
+\begin{tabular}{lcccccccc}
+\toprule
+Strategy ($n=50$) & Acc.\ \% (count) & Extracted \% & Input tok. & Output tok. & Seconds & Any trunc.\ \% & Final trunc.\ \% & Peak GiB \\
+\midrule
+Single (3,072 cap) & 62 (31) & 96 & 108.4 & 761.3 & 38.4 & 4 & 4 & 6.09 \\
+Parallel (3 $\times$ 1,024) + SC & 54 (27) & 78 & 325.1 & 1,859.5 & 92.5 & 26 & 10 & 5.94 \\
+Sequential (1,024 + 2,048 revision) & 58 (29) & 98 & 889.6 & 1,239.5 & 62.7 & 20 & 2 & 6.17 \\ \midrule
+\multicolumn{9}{l}{Initial $\to$ revised (shared first parallel response): wrong$\to$correct 1, correct$\to$wrong 0, correct kept 28, wrong kept 21; answer changed 10} \\
+\bottomrule
+\end{tabular}

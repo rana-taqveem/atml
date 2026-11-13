@@ -1,0 +1,16 @@
+\begin{tabular}{ll>{\raggedright\arraybackslash}p{0.47\linewidth}}
+\toprule
+Check & Subset & Result \\
+\midrule
+No-image first word & Presence (64 responses) & no 64; median length 41 chars \\
+No-image first word & Counting (64 responses) & the 38, there 22, it 4; median length 71 chars \\
+No-image first word & Yes/no (72 responses) & no 56, yes 12, the 2; median length 34 chars \\
+No-image first word & Number (48 responses) & the 34, there 8, i 2; median length 73 chars \\
+No-image first word & Other (72 responses) & the 64, it 4, this 2; median length 70 chars \\
+Presence by reference & Correct image & score 84.4\% on ``yes'', 96.9\% on ``no''; responses: no 36, yes 28 \\
+Presence by reference & Unrelated image & score 9.4\% on ``yes'', 96.9\% on ``no''; responses: no 60, yes 4 \\
+Counting references & Canonical answers & ``1'' 31.2\%, ``2'' 26.6\%, ``3'' 25.0\%, ``4'' 17.2\% \\
+Swap vs.\ correct & Grounding & partner-image response equals that image's correct-image response in 128 of 128 cases \\
+Swap vs.\ correct & VQAv2 & partner-image response equals that image's correct-image response in 192 of 192 cases \\
+\bottomrule
+\end{tabular}

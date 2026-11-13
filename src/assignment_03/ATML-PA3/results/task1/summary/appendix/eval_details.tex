@@ -1,0 +1,13 @@
+\begin{tabular}{lccccccc}
+\toprule
+Condition & \shortstack{GSM8K\\strict (\%)} & \shortstack{GSM8K\\trunc. (\%)} & \shortstack{GSM8K\\extract. (\%)} & \shortstack{GSM8K\\mean tok.} & \shortstack{HellaSwag\\acc (\%)} & \shortstack{ARC-E\\acc (\%)} & \shortstack{Merge max\\$|\Delta|$ (FP32)} \\
+\midrule
+Baseline & 0.00 & 0.76 & 100.00 & 224.9 & 37.56 & 60.90 & -- \\
+Full FT (mid) & 0.00 & 0.91 & 100.00 & 142.4 & 37.01 & 66.41 & -- \\
+Full FT & 0.00 & 0.68 & 100.00 & 140.1 & 37.30 & 66.16 & -- \\
+Full FT + L2-SP & 0.00 & 0.53 & 100.00 & 138.1 & 37.58 & 66.46 & -- \\
+LoRA-4 & 0.00 & 1.14 & 99.92 & 143.6 & 37.74 & 65.70 & 1.12e-04 \\
+LoRA-16 & 0.00 & 0.61 & 100.00 & 139.2 & 37.68 & 65.53 & 1.01e-04 \\
+OPLoRA-16 & 0.00 & 0.45 & 100.00 & 138.7 & 37.77 & 65.49 & 1.49e-03 \\
+\bottomrule
+\end{tabular}

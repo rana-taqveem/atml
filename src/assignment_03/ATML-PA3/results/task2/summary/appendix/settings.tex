@@ -1,0 +1,19 @@
+\begin{tabular}{lp{0.72\linewidth}}
+\toprule
+Setting & Value \\
+\midrule
+Vision encoder & google/siglip-base-patch16-224, frozen; 196 tokens of size 768, FP16 cache \\
+Connector & Linear 768$\to$1024, GELU, Linear 1024$\to$1024 \\
+Language model & Qwen/Qwen3-0.6B, original weights frozen, thinking disabled \\
+LoRA (Stages 2--3) & $r=16$, $\alpha=32$, dropout 0.05; targets q\_proj, k\_proj, v\_proj, o\_proj \\
+Visual scale & 0.05491 = text norm 0.8707 / initial visual norm 15.8576 \\
+Optimizer & AdamW (new instance each stage), weight decay 0.01, clip 1.0, FP16 autocast with GradScaler \\
+Schedule & 5\% warmup, cosine to 10\% of peak, per stage \\
+Batch & microbatch 8 $\times$ 2 accumulation = 16 \\
+Token caps & question 80, caption 64, answer 16 \\
+Caption prompt & Describe this image in one sentence. \\
+Generation & greedy, 16 new tokens, batch 8 \\
+Bootstrap & 4,000 resamples of complete pairs, seed 6304 \\
+Optional 49-token run & not run \\
+\bottomrule
+\end{tabular}

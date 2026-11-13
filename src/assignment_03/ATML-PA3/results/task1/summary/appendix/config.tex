@@ -1,0 +1,29 @@
+\begin{tabular}{lp{0.72\linewidth}}
+\toprule
+Setting & Value \\
+\midrule
+Model & Qwen/Qwen3-0.6B, thinking disabled \\
+Training data & 40,000 MetaMathQA examples (40,002 scanned; 2 too long, 0 GSM8K overlaps, 0 empty removed) \\
+Tokens & 9,908,423 total, 7,100,056 response; mean length 247.7, max 1,941 (cap 2,048) \\
+Optimizer & AdamW, $\beta=(0.9, 0.999)$, $\epsilon=10^{-8}$, weight decay 0.01 \\
+Schedule & 1,250 updates, cosine with 38 warmup updates, clip 1.0 \\
+Batch & microbatch 2 $\times$ 16 accumulation = 32; midpoint at update 625 \\
+Precision & FP16 autocast, gradient checkpointing \\
+LoRA & dropout 0.05; targets q\_proj, k\_proj, v\_proj, o\_proj, gate\_proj, up\_proj, down\_proj \\
+Hardware & Tesla T4 (all runs) \\
+\bottomrule
+\end{tabular}
+
+\vspace{4pt}
+
+\begin{tabular}{lccccc}
+\toprule
+Method & LR & $\lambda$ & $r$ & $\alpha$ & $k$ \\
+\midrule
+Full FT & $2\times10^{-5}$ & 0 & -- & -- & -- \\
+Full FT + L2-SP & $2\times10^{-5}$ & $10^{-3}$ & -- & -- & -- \\
+LoRA-4 & $2\times10^{-4}$ & -- & 4 & 8 & -- \\
+LoRA-16 & $2\times10^{-4}$ & -- & 16 & 32 & -- \\
+OPLoRA-16 & $2\times10^{-4}$ & -- & 16 & 32 & 128 \\
+\bottomrule
+\end{tabular}

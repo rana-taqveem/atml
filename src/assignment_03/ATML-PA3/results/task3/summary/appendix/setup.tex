@@ -1,0 +1,13 @@
+\begin{tabular}{lp{0.78\linewidth}}
+\toprule
+Item & Value \\
+\midrule
+Rollouts & MATH: 1,000 questions, 32,000 rollouts, 523 capped, 521 missing extractions; MathVista: 1,000 questions, 32,000 rollouts, 487 capped, 3,032 missing extractions \\
+Splits & sorted IDs permuted with default\_rng(6304); 200 dev, 800 held-out per dataset; live = first 50 held-out MATH \\
+Grader & pa3-grader-1, math-verify 0.9.0; MathVista: official normalize\_extracted\_answer; letters for multi\_choice; missing extractions form one NO\_ANSWER group, always wrong \\
+Grader outcome & MATH: rollout accuracy 66.3\%, NO\_ANSWER 1.6\%, 5.65 groups/question, 0 group/label disagreements; MathVista: rollout accuracy 53.6\%, NO\_ANSWER 9.5\%, 5.00 groups/question, 0 group/label disagreements; MATH fallback grading for test:4928 \\
+Offline & budgets 1, 2, 4, 8, 16, 32; 10 reveal orders; 1,000 paired question bootstrap resamples; seed 6304 \\
+Adaptive & checks at 4, 8, 16, else 32; $\tau \in$ \{0.5, 0.625, 0.75, 0.875, 1.0\}, $\gamma \in$ \{0.0, 0.1, 0.25, 0.5\}; tolerance 1.0 pp below dev fixed-32 SC \\
+Live model & Qwen/Qwen2.5-3B-Instruct @ aa8e725379, FP16, batch 1; T=0.7, top-p 0.8, top-k 20, repetition penalty 1.0; Tesla T4, torch 2.11.0+cu128, transformers 5.20.2 \\
+\bottomrule
+\end{tabular}

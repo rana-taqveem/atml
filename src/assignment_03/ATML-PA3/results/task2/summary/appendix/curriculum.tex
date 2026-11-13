@@ -1,0 +1,9 @@
+\begin{tabular}{cccc>{\raggedright\arraybackslash}p{0.17\linewidth}>{\raggedright\arraybackslash}p{0.19\linewidth}cl}
+\toprule
+Stage & Updates & Conn.\ LR & LoRA LR & Target mix (\%) & Realised mix (\%) & Train loss (first $\to$ last 50) & Skipped \\
+\midrule
+1 & 2,250 & $10^{-3}$ & -- & caption 100 & caption 100.0 & 4.286 $\to$ 2.327 & 5 (1, 2, 3, 4, 10) \\
+2 & 1,500 & $10^{-4}$ & $2\times 10^{-5}$ & presence 50, counting 25, caption 25 & presence 50.2, counting 24.8, caption 25.1 & 1.764 $\to$ 0.727 & 2 (2251, 2253) \\
+3 & 750 & $5\times 10^{-5}$ & $10^{-5}$ & vqa 70, presence 10, counting 10, caption 10 & vqa 69.9, presence 9.8, counting 10.2, caption 10.0 & 1.074 $\to$ 0.705 & 2 (3791, 3955) \\
+\bottomrule
+\end{tabular}

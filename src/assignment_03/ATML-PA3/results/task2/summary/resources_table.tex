@@ -1,0 +1,12 @@
+\begin{tabular}{llllr}
+\toprule
+Phase & Work & Time & Peak GPU (GiB) & Trainable parameters \\
+\midrule
+Feature caching & 14,597 images, 4.39 GB & 113.2 s download, 249.4 s encoding & 0.857 & 0 \\
+Stage 1 (caption) & 2,250 updates & 2,747.8 s (1.221 s/update) & 1.440 & 1,837,056 \\
+Stage 2 (instruct) & 1,500 updates & 2,057.2 s (1.371 s/update) & 1.544 & 6,424,576 \\
+Stage 3 (vqa) & 750 updates & 999.9 s (1.333 s/update) & 1.543 & 6,424,576 \\
+Training total & 4,500 updates & 1.612 h & 1.544 & -- \\
+Final evaluation & 1,280 responses & 0.032--0.039 s/answer with image, 0.110--0.123 without & 1.893 & 0 \\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,77 @@
+{
+  "rule": "see task2_vlm/evidence.py docstring",
+  "grid": {
+    "presence": {
+      "both_right": "testp0",
+      "identical": "testp2",
+      "changed_wrong": "testp21"
+    },
+    "counting": {
+      "both_right": "testc0",
+      "identical": "testc10",
+      "changed_wrong": "testc1"
+    },
+    "yes/no": {
+      "both_right": "v347170000_218294002",
+      "identical": "v412798003_248112013",
+      "changed_wrong": "v31151001_470779011"
+    },
+    "number": {
+      "both_right": "v363071003_526044027",
+      "identical": "v244167002_213432003",
+      "changed_wrong": "v547300000_314880006"
+    },
+    "other": {
+      "both_right": "v18699003_279895004",
+      "identical": "v286662000_463283000",
+      "changed_wrong": "v193328001_185639002"
+    }
+  },
+  "main": {
+    "presence": {
+      "outcome": "both_right",
+      "pair_id": "testp0",
+      "outcome_counts": {
+        "both_right": 27,
+        "identical": 4,
+        "changed_wrong": 1
+      }
+    },
+    "counting": {
+      "outcome": "changed_wrong",
+      "pair_id": "testc1",
+      "outcome_counts": {
+        "both_right": 5,
+        "identical": 7,
+        "changed_wrong": 20
+      }
+    },
+    "yes/no": {
+      "outcome": "identical",
+      "pair_id": "v412798003_248112013",
+      "outcome_counts": {
+        "both_right": 14,
+        "identical": 21,
+        "changed_wrong": 1
+      }
+    },
+    "number": {
+      "outcome": "changed_wrong",
+      "pair_id": "v547300000_314880006",
+      "outcome_counts": {
+        "both_right": 2,
+        "identical": 9,
+        "changed_wrong": 13
+      }
+    },
+    "other": {
+      "outcome": "identical",
+      "pair_id": "v286662000_463283000",
+      "outcome_counts": {
+        "both_right": 10,
+        "identical": 17,
+        "changed_wrong": 9
+      }
+    }
+  }
+}

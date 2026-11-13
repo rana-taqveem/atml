@@ -1,0 +1,9 @@
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.14\linewidth}>{\raggedright\arraybackslash}p{0.28\linewidth}>{\raggedright\arraybackslash}p{0.5\linewidth}@{}}
+\toprule
+Behaviour (case) & Question (start) & Observed \\
+\midrule
+Selection disagreement (MATH test:2460; gold \texttt{154}) & At a competition with \$N\$ players, the number of players given elite status is equal to \$2\textasciicircum{}\{1+\textbackslash{}lfloor \textbackslash{}log\_\{2\} (N-1) \textbackslash{}rfloor\}-N\$. Suppose that \$19\$ pl\ldots & SC: \texttt{58} (11/32, wrong); Self-certainty + RWC: \texttt{154} (11/32, right). Groups: \texttt{154} 11$\checkmark$; \texttt{58} 11; \textit{no answer} 3; \texttt{45} 1 \\
+Revision (live test:3504; gold \texttt{216}) & What is the least positive multiple of 72 that has exactly 16 positive factors? & Initial: \textit{no answer} (1024 tok, truncated); revised: \texttt{216} (566 tok). Revision opens: ``Let's carefully re-examine the steps to ensure we have the correct least positive multiple of 72 that has exactly 16 positive factors. We have already\ldots'' \\
+Premature stop (MATH test:1803, agreement; gold \texttt{\textbackslash{}frac35}) & In right triangle \$XYZ\$, shown below, what is \$\textbackslash{}sin\{X\}\$? [asy] draw((0,0)--(10,0)--(3.6,4.8)--cycle,black+linewidth(1)); draw(rightanglemark((0,0),(3.\ldots & Stopped at $n=8$ with \texttt{\textbackslash{}frac\{4\}\{5\}} (75\% of revealed, wrong); fixed 32: \texttt{\textbackslash{}frac\{3\}\{5\}} (right). Correct share of full pool 50\%. Groups: \texttt{\textbackslash{}frac\{3\}\{5\}} 16$\checkmark$; \texttt{\textbackslash{}frac\{4\}\{5\}} 15; \texttt{\textbackslash{}frac\{5\}\{4\}} 1 \\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,16 @@
+\begin{tabular}{llcccccccc}
+\toprule
+Data & Controller & Dev acc. & Acc. & $\Delta$ vs fixed 32 (pp) [95\% CI] & Tokens & Rollouts & Stop @4/8/16/32 (\%) & Wrong early (\%) & Fixed 32 right (\% of those) \\
+\midrule
+MATH & Agreement ($\tau=0.625$) & 82.6 & 73.6 & -0.15 [-0.50, 0.16] & 10,139 & 11.8 & 66/6/1/27 & 8.2 & 7.7 \\
+MATH & Quality ($\tau=0.5$, $\gamma=0.0$) & 82.2 & 73.2 & -0.61 [-1.20, -0.06] & 7,663 & 9.0 & 76/6/1/16 & 14.4 & 11.4 \\
+MATH & Fixed SC, $N=8$ & & 71.8 & & 5,344 & 8 & & &  \\
+MATH & Fixed SC, $N=16$ & & 73.1 & & 10,678 & 16 & & &  \\
+MATH & Fixed SC, $N=32$ & & 73.8 & & 21,347 & 32 & & &  \\ \midrule
+MathVista & Agreement ($\tau=0.5$) & 63.6 & 62.1 & -1.05 [-2.08, 0.13] & 3,060 & 9.0 & 74/8/2/16 & 24.6 & 17.5 \\
+MathVista & Quality ($\tau=0.5$, $\gamma=0.0$) & 64.0 & 62.5 & -0.57 [-1.44, 0.40] & 3,428 & 10.2 & 68/10/3/20 & 21.7 & 15.6 \\
+MathVista & Fixed SC, $N=8$ & & 60.5 & & 2,230 & 8 & & &  \\
+MathVista & Fixed SC, $N=16$ & & 61.9 & & 4,462 & 16 & & &  \\
+MathVista & Fixed SC, $N=32$ & & 63.1 & & 8,898 & 32 & & &  \\
+\bottomrule
+\end{tabular}

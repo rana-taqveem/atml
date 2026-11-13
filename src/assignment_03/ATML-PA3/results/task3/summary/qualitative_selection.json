@@ -1,0 +1,30 @@
+{
+  "rules": "see task3_ttc/evidence.py docstring",
+  "disagreement": {
+    "math": {
+      "rwc_right": "test:2460",
+      "sc_right": "test:2198"
+    },
+    "mathvista": {
+      "sc_right": "552",
+      "rwc_right": "643"
+    }
+  },
+  "revision": {
+    "first_changed": "test:3504",
+    "kept": "test:943",
+    "wrong_to_correct": "test:3504",
+    "changed_still_wrong": "test:2892"
+  },
+  "main_table": {
+    "disagreement": "test:2460",
+    "revision": "test:3504",
+    "premature": "test:1803"
+  },
+  "premature": {
+    "math/agreement": "test:1803",
+    "math/quality": "test:1803",
+    "mathvista/agreement": "434",
+    "mathvista/quality": "434"
+  }
+}
